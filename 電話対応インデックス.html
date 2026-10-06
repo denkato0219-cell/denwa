@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="電話対応">
+<meta name="theme-color" content="#142233">
+<title>電話対応</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Saira+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#142233; --panel:#1b2d42; --raised:#233a52; --line:#31495f;
+  --text:#e8eef4; --muted:#8fa3b8; --faint:#5d7389;
+  --signal:#f5b841; --danger:#ef5b5b; --calm:#5aa7ff; --ok:#4fc58d; --teams:#6264a7;
+  --child:#4fb3a9; --work:#8f8cf2; --other:#c9a36b;
+  --r-lg:18px; --r-md:12px; --r-sm:9px;
+  --jp:'Zen Kaku Gothic New','Hiragino Sans','Meiryo',sans-serif;
+  --num:'Saira Semi Condensed','Zen Kaku Gothic New',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
+body{font-family:var(--jp);background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--calm);outline-offset:2px}
+.app{max-width:1280px;margin:0 auto;padding:18px 20px 28px}
+
+.top{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:20px;letter-spacing:.04em}
+.today{color:var(--muted);font-size:14px}
+.today b{color:var(--text);font-family:var(--num);font-size:17px;font-weight:600;margin:0 2px}
+.taker{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.taker input{height:38px;width:150px;padding:0 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-family:var(--jp);font-size:15px}
+.taker input:focus{outline:none;border-color:var(--calm)}
+.top-actions{margin-left:auto;display:flex;gap:8px}
+.icon-btn{height:42px;padding:0 14px;border-radius:var(--r-sm);background:var(--panel);border:1px solid var(--line);font-size:14px;display:flex;align-items:center;gap:7px;color:var(--muted)}
+.icon-btn:active{background:var(--raised)}
+.icon-btn svg{width:18px;height:18px}
+.pending{height:42px;padding:0 16px;border-radius:999px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;background:var(--signal);color:#2a1d00}
+.pending b{font-family:var(--num);font-size:18px;font-weight:600}
+.pending.zero{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:500}
+
+.callbar{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 22px;margin-bottom:16px;transition:border-color .3s,box-shadow .3s}
+.callbar.active{border-color:var(--signal);box-shadow:0 0 0 1px var(--signal),0 0 36px -10px var(--signal)}
+.callbar.done{border-color:var(--ok)}
+.status{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);margin-bottom:4px}
+.lamp{width:10px;height:10px;border-radius:50%;background:var(--faint)}
+.callbar.active .lamp{background:var(--signal);animation:pulse 1.4s ease-in-out infinite}
+.callbar.done .lamp{background:var(--ok)}
+@keyframes pulse{50%{opacity:.35}}
+.elapsed{font-family:var(--num);font-weight:600;font-size:64px;line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;color:var(--faint)}
+.callbar.active .elapsed{color:var(--signal)}
+.callbar.done .elapsed{color:var(--text)}
+.times{display:flex;gap:22px;margin-top:8px;font-size:14px;color:var(--muted)}
+.times span b{font-family:var(--num);font-weight:500;font-size:18px;color:var(--text);margin-left:6px;font-variant-numeric:tabular-nums}
+.call-btns{display:flex;gap:10px}
+.btn-call{width:150px;height:84px;border-radius:var(--r-md);font-size:22px;font-weight:700;letter-spacing:.08em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .08s,opacity .2s}
+.btn-call:active:not(:disabled){transform:scale(.97)}
+.btn-call small{font-size:12px;font-weight:500;letter-spacing:0;opacity:.75}
+.btn-start{background:var(--signal);color:#2a1d00}
+.btn-end{background:var(--danger);color:#fff}
+.btn-call:disabled{opacity:.25;cursor:not-allowed}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px}
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field label,.group-title{display:block;font-size:13px;color:var(--muted);margin-bottom:7px}
+.inp{width:100%;height:54px;padding:0 16px;border-radius:var(--r-md);background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--jp);font-size:20px;transition:border-color .15s}
+.inp::placeholder{color:var(--faint)}
+.inp:focus{outline:none;border-color:var(--calm)}
+.inp.tel{font-family:var(--num);font-size:24px;letter-spacing:.04em}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips:empty{display:none}
+.chip{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);font-size:14px;color:var(--muted)}
+.chip:active{background:var(--raised)}
+.chip.edit{border-style:dashed;color:var(--faint)}
+.chip[aria-pressed="true"]{background:var(--calm);border-color:var(--calm);color:#0e1824;font-weight:700}
+.group{margin-top:18px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;background:var(--bg);padding:5px;border-radius:var(--r-md);border:1px solid var(--line)}
+.seg button{height:50px;border-radius:var(--r-sm);font-size:17px;font-weight:500;color:var(--muted);transition:background .12s,color .12s}
+.seg button[aria-pressed="true"]{color:#0e1824;font-weight:700}
+.seg button[aria-pressed="true"][data-c="child"]{background:var(--child)}
+.seg button[aria-pressed="true"][data-c="work"]{background:var(--work)}
+.seg button[aria-pressed="true"][data-c="other"]{background:var(--other)}
+.seg button[aria-pressed="true"][data-c="high"]{background:var(--danger);color:#fff}
+.seg button[aria-pressed="true"][data-c="mid"]{background:var(--calm)}
+.seg button[aria-pressed="true"][data-c="low"]{background:#9fb1c3}
+.seg button[aria-pressed="true"][data-c="plain"]{background:var(--text)}
+
+.right{display:flex;flex-direction:column;gap:16px}
+.memo{width:100%;min-height:170px;resize:vertical;padding:16px;border-radius:var(--r-md);background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--jp);font-size:19px;line-height:1.75;margin-top:8px}
+.memo:focus{outline:none;border-color:var(--calm)}
+.memo::placeholder{color:var(--faint)}
+.sk-head{display:flex;align-items:center;gap:10px}
+.sk-head .group-title{margin:0}
+.sk-badge{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--signal);color:#2a1d00;font-weight:700;display:none}
+.sk-badge.on{display:inline-block}
+.sk-toggle{margin-left:auto;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg);font-size:14px;color:var(--text)}
+.pad-area{display:none;flex-direction:column;margin-top:12px}
+.sketch-panel.open .pad-area{display:flex}
+.pad-wrap{position:relative;height:300px;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--line);background:var(--bg)}
+.pad-wrap canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.tools{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.tool{height:42px;min-width:42px;padding:0 12px;border-radius:var(--r-sm);background:var(--bg);border:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
+.tool[aria-pressed="true"]{border-color:var(--text);color:var(--text)}
+.swatch{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.15)}
+.tools .sp{flex:1}
+
+/* Teams送信パネル */
+.send-panel{border-color:var(--teams)}
+.send-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.send-head h3{font-size:16px;font-weight:700}
+.send-head .seg-mini{margin-left:auto;display:flex;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg-mini button{height:32px;padding:0 12px;border-radius:999px;font-size:13px;color:var(--muted)}
+.seg-mini button[aria-pressed="true"]{background:var(--text);color:#0e1824;font-weight:700}
+.preview{white-space:pre-wrap;word-break:break-word;background:#fff;color:#242424;border-radius:var(--r-md);padding:14px 16px;font-size:15px;line-height:1.7;max-height:280px;overflow:auto;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif;border-left:5px solid var(--teams)}
+.preview.img{padding:8px;background:#f3f3f3;border-left-color:var(--teams)}
+.preview img{display:block;width:100%;border-radius:8px}
+.send-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.btn-copy{height:58px;border-radius:var(--r-md);background:var(--teams);color:#fff;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px}
+.btn-copy.sub{background:var(--raised);color:var(--text);font-size:15px}
+.btn-copy svg{width:20px;height:20px}
+.btn-copy:active{transform:scale(.98)}
+.tip{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6}
+.tip b{color:var(--text)}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--text);color:#0e1824;padding:13px 22px;border-radius:999px;font-size:15px;font-weight:500;transition:all .25s;z-index:50;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--danger);color:#fff}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(5,12,20,.6);display:none;z-index:40;align-items:flex-end;justify-content:center}
+.sheet-bg.open{display:flex}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:820px;max-height:86vh;display:flex;flex-direction:column;padding:20px 22px calc(20px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sheet-head h2{font-size:19px;font-weight:700}
+.sheet-head .close{margin-left:auto;width:42px;height:42px;border-radius:50%;background:var(--raised);font-size:20px;color:var(--muted)}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sheet-tools{display:flex;gap:8px;margin-bottom:12px}
+.sheet-tools .inp{height:44px;font-size:16px}
+.small-btn{height:44px;padding:0 16px;border-radius:var(--r-sm);background:var(--raised);font-size:14px;white-space:nowrap}
+.filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.filters button{height:38px;padding:0 16px;border-radius:999px;border:1px solid var(--line);font-size:14px;color:var(--muted)}
+.filters button[aria-pressed="true"]{background:var(--text);color:#0e1824;border-color:var(--text);font-weight:700}
+.filters b{font-family:var(--num);font-weight:600;margin-left:4px}
+.rec{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;margin-bottom:8px;background:var(--bg)}
+.rec.is-done{opacity:.62}
+.rec.is-done:hover,.rec.is-done.open{opacity:1}
+.rec-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rec-time{font-family:var(--num);font-size:16px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rec-name{font-weight:700;font-size:16px}
+.tag{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--raised);color:var(--muted)}
+.tag.high{background:var(--danger);color:#fff}
+.tag.child{color:var(--child)} .tag.work{color:var(--work)} .tag.other{color:var(--other)}
+.done-btn{margin-left:auto;height:36px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:700;border:1.5px solid var(--signal);color:var(--signal);white-space:nowrap}
+.done-btn.on{border-color:var(--ok);background:var(--ok);color:#0e1824}
+.who{font-size:12px;color:var(--faint);margin-top:4px}
+.rec-memo{margin-top:6px;font-size:14px;color:var(--muted);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.rec-memo.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rec-sketch{margin-top:8px;max-height:80px;max-width:160px;border-radius:8px;border:1px solid var(--line);display:block}
+.rec.open .rec-sketch{max-height:none;max-width:100%}
+.rec-actions{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
+.rec.open .rec-actions{display:flex}
+.rec-actions button{height:38px;padding:0 14px;border-radius:var(--r-sm);background:var(--raised);font-size:13px}
+.rec-actions .del{color:var(--danger)}
+.no-rec{color:var(--faint);text-align:center;padding:40px 0;font-size:15px}
+
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .callbar{grid-template-columns:1fr}
+  .call-btns .btn-call{flex:1;width:auto}
+  .elapsed{font-size:52px}
+}
+@media (max-width:560px){
+  .app{padding:14px 16px 24px}
+  .top-actions{margin-left:0;width:100%}
+  .top-actions>*{flex:1;justify-content:center}
+  .send-btns{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">電話対応</div>
+    <div class="today">今日 <b id="todayCount">0</b> 件</div>
+    <label class="taker">受付者<input id="taker" autocomplete="off" placeholder="自分の名前"></label>
+    <div class="top-actions">
+      <button class="pending zero" id="pendingBtn" onclick="openHistory('todo')">未対応なし</button>
+      <button class="icon-btn" onclick="openHistory()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>履歴
+      </button>
+    </div>
+  </header>
+
+  <section class="callbar" id="callbar">
+    <div>
+      <div class="status"><span class="lamp"></span><span id="statusText">待機中</span></div>
+      <div class="elapsed" id="elapsed">00:00</div>
+      <div class="times">
+        <span>受付<b id="startTime">--:--:--</b></span>
+        <span>終了<b id="endTime">--:--:--</b></span>
+      </div>
+    </div>
+    <div class="call-btns">
+      <button class="btn-call btn-start" id="btnStart" onclick="startCall()">受付<small id="startSub">電話を取ったら</small></button>
+      <button class="btn-call btn-end" id="btnEnd" onclick="endCall()" disabled>終了<small>記録を保存</small></button>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="field"><label for="recipient">誰宛て</label>
+        <input class="inp" id="recipient" autocomplete="off" placeholder="下のボタンで選ぶか、名前を入力">
+        <div class="chips" id="toChips"></div></div>
+      <div class="field"><label for="callerName">相手のお名前</label>
+        <input class="inp" id="callerName" autocomplete="off" placeholder="例：〇〇くんのお母さん"></div>
+      <div class="field"><label for="callerTel">電話番号</label>
+        <input class="inp tel" id="callerTel" type="tel" autocomplete="off" placeholder="090-0000-0000"></div>
+
+      <div class="group"><span class="group-title">部署</span>
+        <div class="seg" data-key="dept">
+          <button data-v="児童" data-c="child" aria-pressed="false">児童</button>
+          <button data-v="就労" data-c="work" aria-pressed="false">就労</button>
+          <button data-v="その他" data-c="other" aria-pressed="false">その他</button>
+        </div></div>
+      <div class="group"><span class="group-title">緊急度</span>
+        <div class="seg" data-key="urg">
+          <button data-v="緊急" data-c="high" aria-pressed="false">緊急</button>
+          <button data-v="通常" data-c="mid" aria-pressed="false">通常</button>
+          <button data-v="不急" data-c="low" aria-pressed="false">不急</button>
+        </div></div>
+      <div class="group"><span class="group-title">お願いしたいこと</span>
+        <div class="seg" data-key="cb">
+          <button data-v="折り返し" data-c="plain" aria-pressed="false">折り返し</button>
+          <button data-v="伝言" data-c="plain" aria-pressed="false">伝言</button>
+          <button data-v="連絡不要" data-c="plain" aria-pressed="false">共有のみ</button>
+        </div></div>
+    </section>
+
+    <div class="right">
+      <section class="panel">
+        <label class="group-title" for="memo">用件（よくある用件はボタンで入ります）</label>
+        <div class="chips" id="phraseChips"></div>
+        <textarea class="memo" id="memo" placeholder="聞いた内容をそのまま。iPadならApple Pencilで書くと文字になります"></textarea>
+      </section>
+
+      <section class="panel sketch-panel" id="sketchPanel">
+        <div class="sk-head">
+          <span class="group-title">図・手描き（画像に入ります）</span>
+          <span class="sk-badge" id="sketchDot">あり</span>
+          <button class="sk-toggle" id="skToggle" onclick="toggleSketch()">＋ 図を描く</button>
+        </div>
+        <div class="pad-area">
+          <div class="pad-wrap"><canvas id="pad"></canvas></div>
+          <div class="tools">
+            <button class="tool" data-color="#e8eef4" aria-pressed="true" aria-label="白"><span class="swatch" style="background:#e8eef4"></span></button>
+            <button class="tool" data-color="#ef5b5b" aria-pressed="false" aria-label="赤"><span class="swatch" style="background:#ef5b5b"></span></button>
+            <button class="tool" data-color="#5aa7ff" aria-pressed="false" aria-label="青"><span class="swatch" style="background:#5aa7ff"></span></button>
+            <button class="tool" data-color="#f5b841" aria-pressed="false" aria-label="黄"><span class="swatch" style="background:#f5b841"></span></button>
+            <button class="tool" id="eraser" aria-pressed="false">消しゴム</button>
+            <span class="sp"></span>
+            <button class="tool" onclick="undoSketch()">1つ戻す</button>
+            <button class="tool" onclick="clearSketch(true)">全部消す</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel send-panel">
+        <div class="send-head">
+          <h3>Teamsに貼る</h3>
+          <div class="seg-mini" id="viewMode">
+            <button data-m="text" aria-pressed="true">文章</button>
+            <button data-m="img" aria-pressed="false">画像</button>
+          </div>
+        </div>
+        <div class="preview" id="preview"></div>
+        <div class="send-btns">
+          <button class="btn-copy" onclick="copyText()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>文章をコピー</button>
+          <button class="btn-copy sub" onclick="copyImage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>画像をコピー</button>
+        </div>
+        <p class="tip">Teamsで宛て先の人とのチャット（またはグループ）を開いて <b>貼り付け</b>。グループに貼るときは、最後に <b>@名前</b> を打つとその人に通知が届きます。</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="historyBg" onclick="if(event.target===this)closeSheets()">
+  <div class="sheet" role="dialog" aria-label="記録">
+    <div class="sheet-head"><h2>電話対応記録（この端末）</h2><button class="close" onclick="closeSheets()" aria-label="閉じる">×</button></div>
+    <div class="sheet-tools">
+      <input class="inp" id="search" placeholder="名前・番号・内容で探す" oninput="renderHistory()">
+      <button class="small-btn" onclick="exportCSV()">CSVで保存</button>
+    </div>
+    <div class="filters" id="filters">
+      <button data-f="todo" aria-pressed="false">未対応<b id="fTodo">0</b></button>
+      <button data-f="done" aria-pressed="false">対応済み</button>
+      <button data-f="all" aria-pressed="true">すべて</button>
+    </div>
+    <div class="sheet-body" id="historyList"></div>
+  </div>
+</div>
+
+<div class="sheet-bg" id="staffBg" onclick="if(event.target===this)closeSheets()">
+  <div class="sheet" role="dialog" aria-label="スタッフ登録">
+    <div class="sheet-head"><h2>スタッフ登録（誰宛て）</h2><button class="close" onclick="closeSheets()" aria-label="閉じる">×</button></div>
+    <div class="sheet-body">
+      <p class="tip" style="margin:0 0 10px">1行に1人ずつ名前を書いてください。上から順にボタンで並びます。<br>この端末にだけ保存されます。ほかの端末にも入れるときは「一覧をコピー」→ そちらで貼り付けて保存。</p>
+      <textarea class="memo" id="staffText" style="min-height:240px;margin:0" placeholder="加藤&#10;高田&#10;宮元"></textarea>
+      <div class="send-btns">
+        <button class="btn-copy" onclick="saveStaff()">保存する</button>
+        <button class="btn-copy sub" onclick="copyStaff()">一覧をコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const REC_KEY='tel_records_v4', TAKER_KEY='tel_taker_v1';
+const PHRASES=['折り返し希望','欠席の連絡','遅刻・早退','送迎の変更','体調について','書類・手続き','利用・見学の相談','苦情・ご意見'];
+const CB_TEXT={'折り返し':'折り返しのお電話をお願いします','伝言':'伝言です','連絡不要':'共有のみ（連絡不要）'};
+
+let phase='idle', cur=null, timer=null, viewMode='text';
+let sel={dept:null,urg:null,cb:null};
+
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const hms=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+const md=d=>`${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const WD='日月火水木金土';
+const mdw=d=>`${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const ymdhms=d=>`${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${hms(d)}`;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}}
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('保存できませんでした。ブラウザの容量を確認してください',true)}}
+const records=()=>load(REC_KEY,[]);
+const honor=(s,h)=>{s=(s||'').trim(); if(!s) return ''; return /(さん|様|さま|くん|ちゃん|先生)$/.test(s)?s:s+h;};
+
+/* ---------- 受付者（端末ごとに記憶） ---------- */
+try{$('taker').value=localStorage.getItem(TAKER_KEY)||'';}catch(e){}
+$('taker').addEventListener('input',()=>{try{localStorage.setItem(TAKER_KEY,$('taker').value.trim())}catch(e){} autoUpdate(); renderPreview();});
+
+/* ---------- 入力 ---------- */
+document.querySelectorAll('.seg').forEach(seg=>{
+  seg.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    const key=seg.dataset.key, v=b.dataset.v;
+    sel[key]=sel[key]===v?null:v;
+    paintSeg(seg,sel[key]);
+    autoUpdate(); renderPreview();
+  });
+});
+function paintSeg(seg,val){seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===val))}
+['callerName','callerTel','recipient','memo'].forEach(id=>$(id).addEventListener('input',()=>{autoUpdate(); renderPreview(); if(id==='recipient') renderToChips();}));
+
+$('phraseChips').innerHTML=PHRASES.map(p=>`<button class="chip">${esc(p)}</button>`).join('');
+$('phraseChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+  const m=$('memo'), tag=`【${b.textContent}】`;
+  if(m.value.includes(tag)) return;
+  m.value=m.value?`${tag}${m.value.startsWith('【')?'':'\n'}${m.value}`:tag+'\n';
+  m.focus(); m.setSelectionRange(m.value.length,m.value.length);
+  autoUpdate(); renderPreview();
+});
+
+/* ---------- スタッフ登録（端末ごと） ---------- */
+const STAFF_KEY='tel_staff_v1';
+const staff=()=>load(STAFF_KEY,[]);
+function renderToChips(){
+  const list=staff(), v=$('recipient').value.trim();
+  $('toChips').innerHTML=list.map(n=>`<button class="chip" data-n="${esc(n)}" aria-pressed="${n===v}">${esc(n)}</button>`).join('')
+    +`<button class="chip edit" onclick="openStaff()">${list.length?'✎ 編集':'＋ スタッフを登録'}</button>`;
+  $('toChips').querySelectorAll('.chip[data-n]').forEach(b=>b.onclick=()=>{
+    $('recipient').value=b.dataset.n===v?'':b.dataset.n;
+    renderToChips(); autoUpdate(); renderPreview();
+  });
+}
+function openStaff(){$('staffText').value=staff().join('\n'); $('staffBg').classList.add('open'); setTimeout(()=>$('staffText').focus(),50);}
+function saveStaff(){
+  const list=[...new Set($('staffText').value.split(/[\n,、，]/).map(s=>s.trim()).filter(Boolean))];
+  store(STAFF_KEY,list); renderToChips(); closeSheets();
+  toast(list.length?`${list.length}人を登録しました`:'登録を空にしました');
+}
+async function copyStaff(){
+  const t=$('staffText').value.trim(); if(!t){toast('まだ名前がありません',true);return;}
+  (await writeText(t))?toast('一覧をコピーしました。ほかの端末で貼り付けて保存してください'):toast('コピーできませんでした。長押しで選んでコピーしてください',true);
+}
+
+/* ---------- 通話 ---------- */
+function startCall(){
+  if(phase==='active') return;
+  clearForm();
+  const now=new Date();
+  cur={id:Date.now(),start:now.toISOString(),end:null};
+  phase='active'; paintCall();
+  $('startTime').textContent=hms(now);
+  timer=setInterval(tick,1000); tick(); renderPreview();
+}
+function endCall(){
+  if(phase!=='active') return;
+  const now=new Date();
+  cur.end=now.toISOString();
+  clearInterval(timer); tick();
+  $('endTime').textContent=hms(now);
+  phase='done'; paintCall();
+  const all=records(); all.unshift(collect()); store(REC_KEY,all);
+  updateToday(); renderToChips(); renderPreview();
+  toast('保存しました。下の「文章をコピー」でTeamsへ');
+}
+function tick(){
+  if(!cur) return;
+  const end=cur.end?new Date(cur.end):new Date();
+  const s=Math.max(0,Math.floor((end-new Date(cur.start))/1000));
+  $('elapsed').textContent=s>=3600?`${Math.floor(s/3600)}:${pad(Math.floor(s/60)%60)}:${pad(s%60)}`:`${pad(Math.floor(s/60))}:${pad(s%60)}`;
+}
+function paintCall(){
+  const cb=$('callbar'); cb.classList.toggle('active',phase==='active'); cb.classList.toggle('done',phase==='done');
+  $('statusText').textContent={idle:'待機中',active:'通話中',done:'保存済み（このまま直すと記録も更新されます）'}[phase];
+  $('btnStart').disabled=phase==='active';
+  $('btnEnd').disabled=phase!=='active';
+  $('startSub').textContent=phase==='done'?'次の電話へ':'電話を取ったら';
+}
+function clearForm(){
+  ['callerName','callerTel','recipient','memo'].forEach(id=>$(id).value='');
+  sel={dept:null,urg:null,cb:null};
+  document.querySelectorAll('.seg').forEach(s=>paintSeg(s,null));
+  clearSketch(false); toggleSketch(false);
+  $('elapsed').textContent='00:00'; $('startTime').textContent='--:--:--'; $('endTime').textContent='--:--:--';
+  renderToChips();
+}
+function collect(){
+  return {id:cur?cur.id:Date.now(),start:cur?.start||null,end:cur?.end||null,
+    taker:$('taker').value.trim(),
+    name:$('callerName').value.trim(),tel:$('callerTel').value.trim(),to:$('recipient').value.trim(),
+    dept:sel.dept||'',urg:sel.urg||'',cb:sel.cb||'',memo:$('memo').value.trim(),sketch:sketchData||null};
+}
+function autoUpdate(){
+  if(phase!=='done'||!cur) return;
+  const all=records(), i=all.findIndex(r=>r.id===cur.id);
+  if(i>=0){all[i]={...all[i],...collect(),taker:all[i].taker||$('taker').value.trim()}; store(REC_KEY,all); updateToday();}
+}
+
+/* ---------- Teams用の文章 ---------- */
+const hm=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function timeRange(r){   // 10/6(火) 17:49〜17:53（4分）
+  const d=r.start?new Date(r.start):new Date();
+  if(!r.end) return `${mdw(d)}〜`;
+  const e=new Date(r.end), min=Math.max(0,Math.round((e-d)/60000));
+  return `${mdw(d)}〜${hm(e)}（${min<1?'1分未満':min+'分'}）`;
+}
+// 1行ずつ [ラベル付きの文字列, 赤くするか] で組み立て、文章とHTMLの両方に使う
+function buildLines(r){
+  const L=[];
+  L.push({t:'📞 電話連絡',b:true,urgent:r.urg==='緊急'});
+  if(r.to) L.push({t:`宛て：${honor(r.to,'さん')}`});
+  L.push({t:`相手：${honor(r.name,' 様')||'（お名前未確認）'}`});
+  if(r.tel) L.push({t:`電話：${r.tel}`});
+  if(r.cb) L.push({t:`お願い：${CB_TEXT[r.cb]}`});
+  L.push({t:`時間：${timeRange(r)}`});
+  if(r.dept) L.push({t:`部署：${r.dept}`});
+  if(r.memo){L.push({t:'――――――――――'}); r.memo.split('\n').forEach(l=>L.push({t:l}));}
+  if(r.sketch) L.push({t:'（手描きメモあり：画像を見てください）'});
+  return L;
+}
+function buildText(r){
+  return buildLines(r).map(l=>l.t+(l.urgent?'　🔴【緊急】':'')).join('\n');
+}
+function buildHTML(r){
+  return buildLines(r).map(l=>{
+    let h=esc(l.t)||'&nbsp;';
+    if(l.b) h=`<b>${h}</b>`;
+    if(l.urgent) h+=`　<b><span style="color:#C4314B">🔴【緊急】</span></b>`;
+    return `<div>${h}</div>`;
+  }).join('');
+}
+function hasContent(r){return r.name||r.tel||r.to||r.memo||r.sketch;}
+let imgURL=null, imgBusy=0;
+async function renderPreview(){
+  const r=collect(), box=$('preview');
+  if(viewMode==='text'){
+    box.className='preview';
+    if(hasContent(r)) box.innerHTML=buildHTML(r); else box.textContent='入力するとここにTeams用の文章ができます';
+    return;
+  }
+  box.className='preview img';
+  if(!hasContent(r)){box.textContent='入力するとここに画像ができます';return;}
+  const my=++imgBusy;
+  const blob=await buildImage(r); if(my!==imgBusy) return;
+  if(imgURL) URL.revokeObjectURL(imgURL);
+  imgURL=URL.createObjectURL(blob);
+  box.innerHTML=`<img alt="Teams用の画像" src="${imgURL}">`;
+}
+let pvT;
+const _rp=renderPreview;
+renderPreview=function(){clearTimeout(pvT); pvT=setTimeout(_rp,viewMode==='img'?350:0);};
+document.querySelectorAll('#viewMode button').forEach(b=>b.onclick=()=>{
+  viewMode=b.dataset.m;
+  document.querySelectorAll('#viewMode button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  _rp();
+});
+
+/* ---------- 画像（カード） ---------- */
+function wrapLines(ctx,text,maxW){
+  const out=[];
+  for(const para of String(text).split('\n')){
+    let line='';
+    for(const ch of para){
+      if(ctx.measureText(line+ch).width>maxW&&line&&!'。、，．」）』！？ー'.includes(ch)){out.push(line); line=ch;}   // 句読点は行頭に送らない
+      else line+=ch;
+    }
+    out.push(line);
+  }
+  return out;
+}
+function loadImg(src){return new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=src;});}
+async function buildImage(r){
+  try{await document.fonts.ready;}catch(e){}
+  const W=900, P=40, F="'Zen Kaku Gothic New','Hiragino Sans','Meiryo',sans-serif", N="'Saira Semi Condensed',"+F;
+  const c=document.createElement('canvas'), ctx=c.getContext('2d');
+  const accent={'緊急':'#d64545','通常':'#3b7ddd','不急':'#7a8a99'}[r.urg]||'#6264a7';
+  const deptC={'児童':'#2f9187','就労':'#6d6ad6','その他':'#a7814a'}[r.dept];
+  const rows=[['宛て',honor(r.to,'さん')||'—'],['相手',honor(r.name,' 様')||'（お名前未確認）'],['電話',r.tel||'—'],['お願い',r.cb?CB_TEXT[r.cb]:'—']];
+  ctx.font=`500 24px ${F}`;
+  const memoLines=r.memo?wrapLines(ctx,r.memo,W-P*2-8):[];
+  const sk=r.sketch?await loadImg(r.sketch):null;
+  const skH=sk?Math.round((W-P*2)*sk.height/sk.width):0;
+  const H=118+(deptC?50:0)+rows.length*58+24+(memoLines.length?44+memoLines.length*38+16:0)+(sk?skH+24:0)+64;
+  const S=2; c.width=W*S; c.height=H*S; ctx.scale(S,S);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=accent; ctx.fillRect(0,0,W,96);
+  ctx.fillStyle='#fff'; ctx.textBaseline='middle';
+  ctx.font=`700 34px ${F}`;
+  ctx.fillText(`📞 電話連絡${r.urg==='緊急'?'【緊急】':''}`,P,48);
+  const d=r.start?new Date(r.start):new Date();
+  ctx.font=`600 26px ${N}`; ctx.textAlign='right';
+  ctx.fillText(`${mdw(d)}〜${r.end?hm(new Date(r.end)):''}`,W-P,48); ctx.textAlign='left';
+  let y=118;
+  if(deptC){
+    ctx.font=`700 18px ${F}`;
+    const t=r.dept, w=ctx.measureText(t).width+24; ctx.fillStyle=deptC; roundRect(ctx,P,y,w,32,16); ctx.fill(); ctx.fillStyle='#fff'; ctx.fillText(t,P+12,y+17);
+    y+=50;
+  }
+  rows.forEach(([k,v],i)=>{
+    ctx.fillStyle='#6b7785'; ctx.font=`500 20px ${F}`; ctx.fillText(k,P,y+22);
+    ctx.fillStyle=k==='お願い'&&r.cb==='折り返し'?accent:'#1d2733';
+    ctx.font=`${k==='宛て'||k==='相手'?700:500} ${k==='電話'?30:28}px ${k==='電話'?N:F}`;
+    let t=v; while(ctx.measureText(t).width>W-P*2-130&&t.length>1) t=t.slice(0,-2)+'…';
+    ctx.fillText(t,P+130,y+22);
+    if(i<rows.length-1){ctx.fillStyle='#e6eaee'; ctx.fillRect(P,y+50,W-P*2,1);}
+    y+=58;
+  });
+  y+=8;
+  if(memoLines.length){
+    ctx.fillStyle='#f4f6f8'; roundRect(ctx,P-12,y,W-P*2+24,44+memoLines.length*38+8,14); ctx.fill();
+    ctx.fillStyle='#6b7785'; ctx.font=`500 20px ${F}`; ctx.fillText('用件',P,y+26);
+    ctx.fillStyle='#1d2733'; ctx.font=`500 24px ${F}`;
+    memoLines.forEach((l,i)=>ctx.fillText(l,P+4,y+66+i*38));
+    y+=44+memoLines.length*38+24;
+  }
+  if(sk){
+    ctx.save(); roundRect(ctx,P,y,W-P*2,skH,12); ctx.clip(); ctx.drawImage(sk,P,y,W-P*2,skH); ctx.restore();
+    y+=skH+24;
+  }
+  ctx.fillStyle='#9aa5b1'; ctx.font=`500 16px ${F}`;
+  ctx.fillText('電話対応アプリ',P,H-30);
+  return await new Promise(res=>c.toBlob(res,'image/png'));
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ---------- コピー ---------- */
+async function writeText(text){
+  try{await navigator.clipboard.writeText(text); return true;}catch(e){}
+  const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select(); let ok=false;
+  try{ok=document.execCommand('copy');}catch(e){}
+  ta.remove(); return ok;
+}
+// 色付き（HTML）と普通の文章を両方クリップボードに入れる。Teamsは色付きの方で貼られる
+async function writeRich(text,html){
+  try{
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/plain':new Blob([text],{type:'text/plain'}),
+      'text/html':new Blob([html],{type:'text/html'})})]);
+    return true;
+  }catch(e){}
+  const d=document.createElement('div'); d.innerHTML=html;
+  d.style.cssText='position:fixed;left:-9999px;top:0;background:#fff;color:#242424';
+  document.body.appendChild(d);
+  const rg=document.createRange(); rg.selectNodeContents(d); const s=getSelection(); s.removeAllRanges(); s.addRange(rg);
+  let ok=false; try{ok=document.execCommand('copy');}catch(e){}
+  s.removeAllRanges(); d.remove();
+  return ok||writeText(text);
+}
+async function copyText(r){
+  r=r||collect();
+  if(!hasContent(r)){toast('まだ何も入力されていません',true);return;}
+  if(await writeRich(buildText(r),buildHTML(r))) toast('コピーしました。Teamsで貼り付けてください');
+  else{selectPreview(); toast('自動でコピーできませんでした。文章を長押しでコピーしてください',true);}
+}
+function selectPreview(){
+  viewMode='text'; document.querySelectorAll('#viewMode button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.m==='text')); _rp();
+  const rg=document.createRange(); rg.selectNodeContents($('preview')); const s=getSelection(); s.removeAllRanges(); s.addRange(rg);
+}
+async function copyImage(r){
+  r=r||collect();
+  if(!hasContent(r)){toast('まだ何も入力されていません',true);return;}
+  try{
+    const blobP=buildImage(r);
+    await navigator.clipboard.write([new ClipboardItem({'image/png':blobP})]);
+    toast('画像をコピーしました。Teamsで貼り付けてください');
+  }catch(e){
+    const blob=await buildImage(r);
+    if(downloads){
+      const d=r.start?new Date(r.start):new Date();
+      downloads.save({filename:`電話連絡_${d.getMonth()+1}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.png`,data:blob})
+        .then(()=>toast('画像を保存しました。Teamsに添付してください')).catch(()=>{});
+    }else toast('この画面では画像をコピーできません。「文章をコピー」を使ってください',true);
+  }
+}
+
+/* ---------- 手描き ---------- */
+const BG='#142233';
+const pad$=$('pad'), ctx=pad$.getContext('2d');
+let sketchData=null, hasInk=false, inkColor='#e8eef4', erasing=false, drawing=false, penSeen=false, last=null, undoStack=[];
+
+function toggleSketch(force){
+  const p=$('sketchPanel'), open=typeof force==='boolean'?force:!p.classList.contains('open');
+  p.classList.toggle('open',open);
+  $('skToggle').textContent=open?'たたむ':(hasInk?'図をひらく':'＋ 図を描く');
+  if(open) requestAnimationFrame(sizePad);
+}
+function sizePad(){
+  const r=pad$.parentElement.getBoundingClientRect(); if(!r.width) return;
+  const dpr=window.devicePixelRatio||1;
+  pad$.width=Math.round(r.width*dpr); pad$.height=Math.round(r.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  paintSketch();
+}
+function paintSketch(){
+  const w=pad$.width/(window.devicePixelRatio||1), h=pad$.height/(window.devicePixelRatio||1);
+  ctx.fillStyle=BG; ctx.fillRect(0,0,w,h);
+  if(!sketchData) return;
+  const img=new Image();
+  img.onload=()=>{const s=Math.min(w/img.width,h/img.height,1);ctx.drawImage(img,0,0,img.width*s,img.height*s);};
+  img.src=sketchData;
+}
+window.addEventListener('resize',()=>{if($('sketchPanel').classList.contains('open'))sizePad();});
+document.querySelectorAll('.tool[data-color]').forEach(b=>b.onclick=()=>{inkColor=b.dataset.color; erasing=false; markTools(b);});
+$('eraser').onclick=()=>{erasing=true; markTools($('eraser'));};
+function markTools(active){document.querySelectorAll('.tool[data-color],#eraser').forEach(b=>b.setAttribute('aria-pressed',b===active));}
+function pt(e){const r=pad$.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top,p:e.pressure||.5};}
+pad$.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='pen') penSeen=true;
+  if(e.pointerType==='touch'&&penSeen) return;   // ペン使用中は手のひらを無視
+  e.preventDefault(); pad$.setPointerCapture(e.pointerId);
+  undoStack.push(pad$.toDataURL()); if(undoStack.length>20) undoStack.shift();
+  drawing=true; last=pt(e); stroke(last,last);
+});
+pad$.addEventListener('pointermove',e=>{
+  if(!drawing) return;
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+  for(const ev of evs){const p=pt(ev); stroke(last,p); last=p;}
+});
+['pointerup','pointercancel','pointerleave'].forEach(t=>pad$.addEventListener(t,()=>{
+  if(!drawing) return; drawing=false; hasInk=true; exportSketch();
+}));
+function stroke(a,b){
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.strokeStyle=erasing?BG:inkColor;
+  ctx.lineWidth=erasing?26:1.6+b.p*3.4;
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x+.01,b.y); ctx.stroke();
+}
+function exportSketch(){
+  if(!hasInk){sketchData=null;}
+  else{
+    const max=1200, s=Math.min(1,max/pad$.width);
+    const off=document.createElement('canvas'); off.width=Math.round(pad$.width*s); off.height=Math.round(pad$.height*s);
+    off.getContext('2d').drawImage(pad$,0,0,off.width,off.height);
+    sketchData=off.toDataURL('image/jpeg',.75);
+  }
+  $('sketchDot').classList.toggle('on',!!sketchData);
+  autoUpdate(); renderPreview();
+}
+function undoSketch(){
+  const prev=undoStack.pop(); if(!prev) return;
+  const img=new Image();
+  img.onload=()=>{ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(img,0,0);ctx.restore();exportSketch();};
+  img.src=prev;
+}
+function clearSketch(ask){
+  if(ask&&hasInk&&!twoTap(event&&event.target,'もう一度押すと消去')) return;
+  undoStack=[]; hasInk=false; sketchData=null;
+  if(pad$.width) paintSketch();
+  $('sketchDot').classList.remove('on');
+  if(ask){autoUpdate(); renderPreview();}
+}
+function loadSketch(data){
+  undoStack=[]; sketchData=data||null; hasInk=!!data;
+  $('sketchDot').classList.toggle('on',hasInk);
+  toggleSketch(hasInk);
+  if(pad$.width) paintSketch();
+}
+
+/* ---------- 履歴 ---------- */
+let hFilter='all';
+const isDone=r=>r.done??(r.cb==='連絡不要');   // 共有のみは最初から対応済み扱い
+document.querySelectorAll('#filters button').forEach(b=>b.onclick=()=>{hFilter=b.dataset.f;renderHistory();});
+function openHistory(f){hFilter=typeof f==='string'?f:'all';$('historyBg').classList.add('open');renderHistory();}
+function toggleDone(id){
+  const all=records(), r=all.find(x=>x.id===id); if(!r) return;
+  r.done=!isDone(r); r.doneAt=r.done?new Date().toISOString():null;
+  store(REC_KEY,all); updateToday(); renderHistory();
+  toast(r.done?'対応済みにしました':'未対応に戻しました');
+}
+function renderHistory(){
+  const q=$('search').value.trim(), list=$('historyList');
+  document.querySelectorAll('#filters button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===hFilter));
+  const all=records().filter(r=>!q||[r.name,r.tel,r.to,r.memo,r.dept,r.taker].join(' ').includes(q))
+    .filter(r=>hFilter==='all'||(hFilter==='done')===isDone(r));
+  if(!all.length){list.innerHTML=`<div class="no-rec">${q?'見つかりませんでした':hFilter==='todo'?'未対応の電話はありません':hFilter==='done'?'対応済みの記録はまだありません':'まだ記録がありません。受付ボタンから始めます'}</div>`;return;}
+  list.innerHTML=all.map(r=>{
+    const d=r.start?new Date(r.start):null;
+    const dc={'児童':'child','就労':'work','その他':'other'}[r.dept]||'';
+    const dn=isDone(r);
+    const meta=[r.taker?`受付：${esc(r.taker)}`:'',dn&&r.doneAt?`${md(new Date(r.doneAt))} 対応済み`:''].filter(Boolean).join('　');
+    return `<div class="rec${dn?' is-done':''}">
+      <div class="rec-top">
+        <span class="rec-time">${d?md(d):''}</span>
+        <span class="rec-name">${esc(r.name||'名前なし')}</span>
+        ${r.dept?`<span class="tag ${dc}">${esc(r.dept)}</span>`:''}
+        ${r.urg?`<span class="tag ${r.urg==='緊急'?'high':''}">${esc(r.urg)}</span>`:''}
+        ${r.cb?`<span class="tag">${r.cb==='連絡不要'?'共有のみ':esc(r.cb)}</span>`:''}
+        <button class="done-btn${dn?' on':''}" onclick="toggleDone(${r.id})">${dn?'対応済み':'未対応'}</button>
+      </div>
+      ${meta?`<div class="who">${meta}</div>`:''}
+      <div class="rec-memo clamp">${r.tel?esc(r.tel)+'　':''}${r.to?'→ '+esc(r.to)+'　':''}${esc(r.memo)}</div>
+      ${r.sketch?`<img class="rec-sketch" src="${r.sketch}" alt="手描きメモ">`:''}
+      <div class="rec-actions">
+        <button onclick="copyRec(${r.id},'text')">文章をコピー</button>
+        <button onclick="copyRec(${r.id},'img')">画像をコピー</button>
+        <button onclick="reopen(${r.id})">開いて直す</button>
+        <button class="del" onclick="delRec(${r.id})">削除</button></div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.rec').forEach(el=>el.onclick=e=>{
+    if(e.target.closest('button')) return;
+    el.classList.toggle('open'); el.querySelector('.rec-memo').classList.toggle('clamp');
+  });
+}
+function copyRec(id,kind){const r=records().find(x=>x.id===id); if(!r) return; kind==='img'?copyImage(r):copyText(r);}
+function reopen(id){
+  if(phase==='active'){toast('通話中は開けません。先に終了してください',true);return;}
+  const r=records().find(x=>x.id===id); if(!r) return;
+  clearForm();
+  cur={id:r.id,start:r.start,end:r.end};
+  $('callerName').value=r.name||''; $('callerTel').value=r.tel||''; $('recipient').value=r.to||''; $('memo').value=r.memo||'';
+  sel={dept:r.dept||null,urg:r.urg||null,cb:r.cb||null};
+  document.querySelectorAll('.seg').forEach(s=>paintSeg(s,sel[s.dataset.key]));
+  loadSketch(r.sketch);
+  if(r.start)$('startTime').textContent=hms(new Date(r.start));
+  if(r.end)$('endTime').textContent=hms(new Date(r.end));
+  tick(); phase='done'; paintCall(); closeSheets(); renderToChips(); renderPreview();
+}
+function twoTap(btn,label){
+  if(btn&&btn.dataset.armed==='1') return true;
+  if(btn){const old=btn.textContent;btn.dataset.armed='1';btn.textContent=label;
+    setTimeout(()=>{btn.dataset.armed='';btn.textContent=old;},2500);}
+  return false;
+}
+function delRec(id){
+  if(!twoTap(event&&event.target,'もう一度押すと削除')) return;
+  store(REC_KEY,records().filter(r=>r.id!==id)); updateToday(); renderHistory(); renderToChips();
+}
+function exportCSV(){
+  const all=records(); if(!all.length){toast('記録がありません',true);return;}
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const t=v=>v?ymdhms(new Date(v)):'';
+  const head=['受付','終了','受付者','相手','電話番号','宛て','部署','緊急度','お願い','状態','内容','手描き'];
+  const rows=all.map(r=>[t(r.start),t(r.end),r.taker,r.name,r.tel,r.to,r.dept,r.urg,r.cb==='連絡不要'?'共有のみ':r.cb,isDone(r)?'対応済み':'未対応',r.memo,r.sketch?'あり':''].map(q).join(','));
+  const blob=new Blob(['﻿'+[head.map(q).join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8'});
+  const d=new Date(), filename=`電話対応記録_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.csv`;
+  if(!downloads){toast('この画面ではCSVを保存できません',true);return;}
+  downloads.save({filename,data:blob}).then(()=>toast('CSVを保存しました')).catch(()=>{});
+}
+
+function closeSheets(){document.querySelectorAll('.sheet-bg').forEach(b=>b.classList.remove('open'))}
+function updateToday(){
+  const d=new Date().toDateString(), all=records();
+  $('todayCount').textContent=all.filter(r=>r.start&&new Date(r.start).toDateString()===d).length;
+  const n=all.filter(r=>!isDone(r)).length, b=$('pendingBtn');
+  b.className='pending'+(n?'':' zero');
+  b.innerHTML=n?`未対応 <b>${n}</b> 件`:'未対応なし';
+  $('fTodo').textContent=n;
+}
+let tt;
+function toast(msg,err){const t=$('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='toast',3200);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheets();});
+let downloads=null;
+if(window.claude&&claude.use){claude.use('downloads').then(d=>{downloads=d;}).catch(()=>{});}
+updateToday(); paintCall(); renderToChips(); renderPreview();
+</script>
+</body>
+</html>
+
+</body></html>
