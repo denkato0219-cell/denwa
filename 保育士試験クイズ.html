@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="保育士クイズ">
+<meta name="theme-color" content="#f6f1e7">
+<title>保育士試験クイズ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Saira+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1e7; --panel:#fffdf8; --raised:#f0e9db; --line:#e2d8c6;
+  --text:#2b2a27; --muted:#77705f; --faint:#a89f8b;
+  --accent:#e0703a; --accent-soft:#fbe4d6; --ok:#2f9e6b; --ok-soft:#dcf2e6;
+  --ng:#d64545; --ng-soft:#fadede; --hint:#c99a12; --hint-soft:#fbf1cf;
+  --sheet:#c0392b; --sheet-soft:#fdf0ee; --ink:#1d1d1d;
+  --r-lg:18px; --r-md:12px; --r-sm:9px;
+  --jp:'Zen Kaku Gothic New','Hiragino Sans','Meiryo',sans-serif;
+  --num:'Saira Semi Condensed','Zen Kaku Gothic New',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1a1916; --panel:#24221e; --raised:#2e2b26; --line:#3d3931;
+    --text:#efe9dd; --muted:#a9a08e; --faint:#756d5e;
+    --accent:#f08a55; --accent-soft:#4a2f22; --ok:#4fc58d; --ok-soft:#1f3a2c;
+    --ng:#ef6b6b; --ng-soft:#4a2424; --hint:#e6bd3c; --hint-soft:#433a1a;
+    --sheet:#ef7a6c; --sheet-soft:#3a2523; --ink:#f3ede2;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1a1916; --panel:#24221e; --raised:#2e2b26; --line:#3d3931;
+  --text:#efe9dd; --muted:#a9a08e; --faint:#756d5e;
+  --accent:#f08a55; --accent-soft:#4a2f22; --ok:#4fc58d; --ok-soft:#1f3a2c;
+  --ng:#ef6b6b; --ng-soft:#4a2424; --hint:#e6bd3c; --hint-soft:#433a1a;
+  --sheet:#ef7a6c; --sheet-soft:#3a2523; --ink:#f3ede2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--jp);line-height:1.7;-webkit-text-size-adjust:100%;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 48px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+header.top h1{font-size:20px;font-weight:700;letter-spacing:.02em}
+header.top h1 small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.nav{display:flex;gap:6px}
+.nav button{white-space:nowrap;padding:7px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:13px}
+.nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;margin-bottom:14px}
+.card h2{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+.hidden{display:none!important}
+
+/* setup */
+.subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.subj{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border-radius:var(--r-md);
+  border:1.5px solid var(--line);background:var(--bg);text-align:left;transition:.15s}
+.subj b{font-size:14px} .subj span{font-size:11.5px;color:var(--muted)}
+.subj.on{border-color:var(--accent);background:var(--accent-soft)}
+.subj .acc{font-family:var(--num);font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px;flex-wrap:wrap}
+.seg button{padding:6px 12px;border-radius:999px;font-size:13px}
+.seg button.on{background:var(--accent);color:#fff}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px dashed var(--line);flex-wrap:wrap}
+.opt:first-of-type{border-top:none}
+.opt label{font-size:14px;font-weight:500}
+.opt .desc{font-size:11.5px;color:var(--muted);font-weight:400;display:block}
+.switch{width:46px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:.15s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on{background:var(--accent)} .switch.on::after{left:23px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 20px;border-radius:var(--r-md);
+  background:var(--accent);color:#fff;font-weight:700;font-size:15px}
+.btn.ghost{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.linkbtn{color:var(--accent);font-size:13px;text-decoration:underline}
+
+/* quiz */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;background:var(--raised);font-size:12px;color:var(--text)}
+.progress{height:5px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:12px}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.timer{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.timer .bar{flex:1;height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.timer .bar i{display:block;height:100%;background:var(--ok);transition:width 1s linear,background .3s}
+.timer .t{font-family:var(--num);font-size:20px;min-width:52px;text-align:right}
+.timer.warn .bar i{background:var(--hint)} .timer.danger .bar i{background:var(--ng)}
+.timer.danger .t{color:var(--ng)}
+.qtext{font-size:17px;font-weight:500;line-height:1.8;margin-bottom:14px}
+.qtext .qno{font-family:var(--num);color:var(--accent);font-weight:600;margin-right:6px}
+.choices{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.choices li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:var(--r-md);border:1.5px solid var(--line);background:var(--bg);cursor:pointer;transition:.15s}
+.choices li .n{font-family:var(--num);font-weight:600;color:var(--sheet);min-width:18px}
+.choices li.sel{border-color:var(--accent);background:var(--accent-soft)}
+.choices li.out{opacity:.35;text-decoration:line-through;pointer-events:none}
+.choices li.correct{border-color:var(--ok);background:var(--ok-soft)}
+.choices li.wrong{border-color:var(--ng);background:var(--ng-soft)}
+.reveal{padding:18px;border:1.5px dashed var(--line);border-radius:var(--r-md);text-align:center;margin-bottom:14px}
+
+/* mark sheet */
+.sheet{border:2px solid var(--sheet);border-radius:6px;background:var(--sheet-soft);padding:10px 12px;margin-bottom:12px}
+.sheet .lbl{font-size:11px;color:var(--sheet);letter-spacing:.2em;margin-bottom:6px;display:flex;justify-content:space-between}
+.sheet .line{display:flex;align-items:center;gap:6px}
+.sheet .qn{font-family:var(--num);color:var(--sheet);font-weight:600;min-width:44px;font-size:14px;border-right:1px solid var(--sheet);margin-right:6px}
+.bubble{width:36px;height:46px;border-radius:50%/50%;border:1.6px solid var(--sheet);color:var(--sheet);display:flex;align-items:center;justify-content:center;
+  font-family:var(--num);font-size:15px;font-weight:600;background:transparent;position:relative;transition:.12s}
+.bubble.fill{background:var(--ink);border-color:var(--ink);color:transparent}
+.bubble.out{opacity:.25}
+.bubble.correct{outline:3px solid var(--ok);outline-offset:2px}
+
+.hintbox{border-left:4px solid var(--hint);background:var(--hint-soft);padding:10px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:12px;font-size:14px}
+.hintbox b{color:var(--hint)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions .btn{flex:1;min-width:120px}
+.mic{display:flex;align-items:center;gap:10px;margin:4px 0 12px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.micbtn{width:46px;height:46px;border-radius:50%;background:var(--panel);border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+.micbtn svg{width:22px;height:22px}
+.micbtn.live{background:var(--ng);border-color:var(--ng);color:#fff;animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(214,69,69,.5)}100%{box-shadow:0 0 0 14px rgba(214,69,69,0)}}
+.iconbtn{width:40px;height:40px;border-radius:50%;background:var(--panel);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.iconbtn svg{width:19px;height:19px}
+
+/* feedback */
+.verdict{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;margin-bottom:10px}
+.verdict.ok{color:var(--ok)} .verdict.ng{color:var(--ng)}
+.exp section{margin-bottom:12px}
+.exp h3{font-size:12.5px;color:var(--muted);letter-spacing:.08em;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.exp p{font-size:14.5px}
+.exp .memo{background:var(--accent-soft);border-radius:var(--r-sm);padding:10px 12px}
+.exp .point{background:var(--raised);border-radius:var(--r-sm);padding:10px 12px}
+.trend{font-size:12.5px;color:var(--muted)}
+.stars{color:var(--hint);letter-spacing:1px}
+
+/* stats */
+.big{font-family:var(--num);font-size:44px;font-weight:600;line-height:1}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.kpis div{background:var(--bg);border-radius:var(--r-md);padding:12px 6px}
+.kpis b{display:block;font-family:var(--num);font-size:24px}
+.kpis span{font-size:11.5px;color:var(--muted)}
+.srow{display:grid;grid-template-columns:110px 1fr 76px;gap:10px;align-items:center;padding:7px 0;font-size:13.5px}
+.srow .b{height:10px;border-radius:999px;background:var(--line);overflow:hidden}
+.srow .b i{display:block;height:100%;border-radius:999px}
+.srow .v{font-family:var(--num);text-align:right;font-size:14px}
+.review li{list-style:none;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.review li:first-child{border-top:none}
+.review .mk{font-weight:700;margin-right:6px}
+.review .mk.ok{color:var(--ok)} .review .mk.ng{color:var(--ng)}
+.review details summary{cursor:pointer}
+.review details .exp{margin-top:8px}
+.note{font-size:11.5px;color:var(--muted);line-height:1.6}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;z-index:9;opacity:0;transition:.2s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:.92}
+@media (max-width:420px){
+  .bubble{width:32px;height:42px;font-size:14px}
+  .sheet .qn{min-width:38px}
+  .srow{grid-template-columns:92px 1fr 64px}
+  .qtext{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>保育士試験クイズ<small>過去問頻出テーマ・一問一答 / マークシート</small></h1>
+    <nav class="nav">
+      <button id="navHome" class="on">出題</button>
+      <button id="navStats">成績</button>
+    </nav>
+  </header>
+
+  <!-- ========== SETUP ========== -->
+  <main id="viewSetup">
+    <div class="card">
+      <h2>① 教科を選ぶ</h2>
+      <div class="subjects" id="subjList"></div>
+      <div class="row" style="margin-top:10px;justify-content:space-between">
+        <button class="linkbtn" id="selAll">すべて選択</button>
+        <span class="small muted" id="selCount"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>② 出題設定</h2>
+      <div class="opt">
+        <label>解答形式<span class="desc">一問一答は選択肢を隠して、まず自分で答えを思い出す練習</span></label>
+        <div class="seg" id="segMode">
+          <button data-v="sheet" class="on">マークシート</button>
+          <button data-v="flash">一問一答</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>問題数</label>
+        <div class="seg" id="segCount">
+          <button data-v="5">5</button>
+          <button data-v="10" class="on">10</button>
+          <button data-v="20">20</button>
+          <button data-v="0">全問</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>制限時間（1問）<span class="desc">半分経過でヒント、残り20%で選択肢を2つ消去</span></label>
+        <div class="seg" id="segTime">
+          <button data-v="0">なし</button>
+          <button data-v="30">30秒</button>
+          <button data-v="60" class="on">60秒</button>
+          <button data-v="90">90秒</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>出題範囲</label>
+        <div class="seg" id="segScope">
+          <button data-v="all" class="on">すべて</button>
+          <button data-v="weak">間違えた問題</button>
+          <button data-v="new">未回答</button>
+        </div>
+      </div>
+      <div class="opt">
+        <label>問題を読み上げる<span class="desc">音声で問題文と選択肢を読み上げます</span></label>
+        <button class="switch" id="swTts" aria-label="読み上げ"></button>
+      </div>
+      <div class="opt">
+        <label>音声で解答する<span class="desc">「3番」「さん」や選択肢の言葉を話すと解答。「ヒント」「スキップ」も使えます</span></label>
+        <button class="switch" id="swVoice" aria-label="音声解答"></button>
+      </div>
+      <p class="note" id="voiceNote" style="margin-top:6px"></p>
+    </div>
+
+    <button class="btn block" id="startBtn">スタート</button>
+    <p class="note" style="margin-top:14px">
+      ※ 収録問題は、保育士試験（筆記）の過去問で繰り返し問われているテーマを基に作成した<b>オリジナル問題</b>です。
+      「出題傾向」欄は出題頻度の目安で、本試験の問題番号を示すものではありません。
+      実際の過去問は全国保育士養成協議会の公式サイトで公開されています。法令・統計は改正があるため、最新情報もあわせて確認してください。
+    </p>
+  </main>
+
+  <!-- ========== QUIZ ========== -->
+  <main id="viewQuiz" class="hidden">
+    <div class="card">
+      <div class="qhead">
+        <span><span class="tag" id="qSubj"></span></span>
+        <span id="qPos" style="font-family:var(--num)"></span>
+      </div>
+      <div class="progress"><i id="qProg"></i></div>
+      <div class="timer" id="timer">
+        <div class="bar"><i id="timerBar"></i></div>
+        <span class="t" id="timerT"></span>
+      </div>
+      <p class="qtext" id="qText"></p>
+
+      <div id="flashCover" class="reveal hidden">
+        <p class="small muted" style="margin-bottom:10px">答えを思い浮かべてから選択肢を表示（音声なら答えの言葉をそのまま話してもOK）</p>
+        <button class="btn ghost" id="showChoices">選択肢を表示</button>
+      </div>
+      <ul class="choices" id="choices"></ul>
+
+      <div class="sheet" id="sheet">
+        <div class="lbl"><span>解 答 欄</span><span>HB の鉛筆でマーク</span></div>
+        <div class="line"><span class="qn" id="sheetNo"></span><div class="row" id="bubbles" style="gap:6px"></div></div>
+      </div>
+
+      <div id="hints"></div>
+
+      <div class="mic" id="micRow">
+        <button class="micbtn" id="micBtn" aria-label="音声で解答">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        </button>
+        <span id="micStatus">マイクを押して話してください</span>
+      </div>
+
+      <div class="actions" id="qActions">
+        <button class="iconbtn" id="ttsBtn" aria-label="読み上げ" title="読み上げ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        </button>
+        <button class="btn ghost" id="hintBtn">ヒント</button>
+        <button class="btn" id="answerBtn" disabled>解答する</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="feedback">
+      <div class="verdict" id="verdict"></div>
+      <div class="exp" id="expBox"></div>
+      <div class="actions" style="margin-top:6px">
+        <button class="btn" id="nextBtn">次の問題へ</button>
+      </div>
+    </div>
+    <div class="row" style="justify-content:center"><button class="linkbtn" id="quitBtn">中断して結果を見る</button></div>
+  </main>
+
+  <!-- ========== RESULT ========== -->
+  <main id="viewResult" class="hidden">
+    <div class="card" style="text-align:center">
+      <p class="muted small">今回の正答率</p>
+      <p class="big" id="rAcc"></p>
+      <p class="muted" id="rSub" style="margin-top:6px"></p>
+    </div>
+    <div class="card">
+      <h2>教科別</h2>
+      <div id="rSubj"></div>
+    </div>
+    <div class="card">
+      <h2>問題ごとの振り返り</h2>
+      <ul class="review" id="rList"></ul>
+    </div>
+    <div class="actions">
+      <button class="btn" id="retryWrong">間違えた問題をもう一度</button>
+      <button class="btn ghost" id="backHome">設定に戻る</button>
+    </div>
+  </main>
+
+  <!-- ========== STATS ========== -->
+  <main id="viewStats" class="hidden">
+    <div class="card">
+      <h2>これまでの成績</h2>
+      <div class="kpis">
+        <div><b id="sAcc">-</b><span>累計正答率</span></div>
+        <div><b id="sAns">0</b><span>解答数</span></div>
+        <div><b id="sCover">0%</b><span>網羅率</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>教科別の正答率</h2>
+      <div id="sSubj"></div>
+      <p class="note" style="margin-top:8px">合格基準は各科目6割以上。60%未満の教科は赤で表示しています。</p>
+    </div>
+    <div class="card">
+      <h2>苦手な問題（間違いが多い順）</h2>
+      <ul class="review" id="sWeak"></ul>
+    </div>
+    <div class="card">
+      <h2>最近のセッション</h2>
+      <ul class="review" id="sHist"></ul>
+    </div>
+    <div class="row" style="justify-content:center"><button class="linkbtn" id="resetBtn">成績データをリセット</button></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================================================================
+   問題データ
+   s: 教科ID / q: 問題 / c: 選択肢(5) / a: 正解index(0始まり)
+   hint: 時間経過で出るヒント / exp: 解説 / memo: 覚え方 / point: 重要点
+   freq: 出題頻度(1-3) / trend: 出題傾向
+   =================================================================== */
+const SUBJECTS = [
+  {id:'genri',   name:'保育原理',         desc:'保育所保育指針・歴史'},
+  {id:'kyoiku',  name:'教育原理',         desc:'教育思想家・教育法規'},
+  {id:'yogo',    name:'社会的養護',       desc:'施設・里親・人物'},
+  {id:'kodomo',  name:'子ども家庭福祉',   desc:'児童福祉法・虐待・権利'},
+  {id:'fukushi', name:'社会福祉',         desc:'制度・生活保護・歴史'},
+  {id:'shinri',  name:'保育の心理学',     desc:'発達理論・愛着'},
+  {id:'hoken',   name:'子どもの保健',     desc:'発育・感染症・救急'},
+  {id:'eiyo',    name:'子どもの食と栄養', desc:'離乳・アレルギー・栄養素'},
+  {id:'jisshu',  name:'保育実習理論',     desc:'音楽・造形・児童文化'},
+];
+
+const QUESTIONS = [
+/* ---------- 保育原理 ---------- */
+{s:'genri',q:'保育所保育指針（2017年告示）に示された「幼児期の終わりまでに育ってほしい姿」はいくつあるか。',
+ c:['5つ','8つ','10個','12個','3つ'],a:2,
+ hint:'「健康な心と体」から始まり「豊かな感性と表現」で終わります。5領域の2倍です。',
+ exp:'「幼児期の終わりまでに育ってほしい姿」は10項目。保育所保育指針・幼稚園教育要領・幼保連携型認定こども園教育・保育要領の3つで共通に示されています。到達目標ではなく、保育者が指導を行う際に考慮する方向性であることにも注意。',
+ memo:'頭文字で「けん・じ・きょう・どう・しゃ・し・し・すう・こと・かん」＝健康／自立心／協同性／道徳性・規範意識／社会生活との関わり／思考力／自然・生命尊重／数量・図形・文字／言葉による伝え合い／豊かな感性と表現。',
+ point:'「到達すべき目標」ではない、「個別に取り出されて指導されるものではない」という記述がひっかけで頻出。',
+ freq:3,trend:'2017年改定以降ほぼ毎回、項目名の正誤や数を問う形で出題'},
+{s:'genri',q:'保育所保育指針において、保育所における「養護」を構成する2つの側面として正しい組み合わせはどれか。',
+ c:['生命の保持と情緒の安定','健康と安全','生命の保持と健康の増進','情緒の安定と人間関係','基本的生活習慣と情緒の安定'],a:0,
+ hint:'1つは「命を守る」こと、もう1つは「心が落ち着く」こと。',
+ exp:'保育における養護とは「子どもの生命の保持及び情緒の安定を図るために保育士等が行う援助や関わり」。保育所保育は「養護及び教育を一体的に行うこと」を特性とします。',
+ memo:'「養護は “いのち” と “こころ”」＝生命の保持・情緒の安定。',
+ point:'養護＝生命の保持・情緒の安定、教育＝5領域（3歳以上）。「養護と教育を一体的に行う」がキーワード。',
+ freq:3,trend:'総則からの出題として毎回のように登場'},
+{s:'genri',q:'保育所保育指針の3歳以上児の保育に関するねらい及び内容の「5領域」に含まれないものはどれか。',
+ c:['健康','人間関係','環境','運動','表現'],a:3,
+ hint:'残りの1つは「言葉」です。',
+ exp:'5領域は「健康」「人間関係」「環境」「言葉」「表現」。運動は「健康」領域の内容に含まれますが、領域名ではありません。',
+ memo:'「け・に・か・こ・ひょう」（健康・人間関係・環境・言葉・表現）→「健康な人間環境で言葉を表現」。',
+ point:'乳児は5領域ではなく「3つの視点」、1歳以上3歳未満児から5領域になる点もセットで覚える。',
+ freq:3,trend:'領域名・内容の正誤問題として頻出'},
+{s:'genri',q:'保育所保育指針における乳児保育の「3つの視点」に含まれないものはどれか。',
+ c:['健やかに伸び伸びと育つ','身近な人と気持ちが通じ合う','身近なものと関わり感性が育つ','言葉で伝え合う喜びを味わう','（※上の4つのうち3つが正しい視点）'],a:3,
+ hint:'乳児はまだ言葉が十分ではありません。身体・人・もの の3視点です。',
+ exp:'乳児保育の3つの視点は「健やかに伸び伸びと育つ」（身体的発達）、「身近な人と気持ちが通じ合う」（社会的発達）、「身近なものと関わり感性が育つ」（精神的発達）。言葉に関するものは1歳以上の「言葉」領域です。',
+ memo:'「からだ・ひと・もの」の3つ。',
+ point:'身体的・社会的・精神的発達との対応も問われる。',
+ freq:2,trend:'2017年改定で新設された内容として繰り返し出題'},
+{s:'genri',q:'「生活を、生活で、生活へ」という言葉で知られ、子どもの自発的な生活を重視する「誘導保育論」を唱えた人物は誰か。',
+ c:['倉橋惣三','城戸幡太郎','赤沢鍾美','野口幽香','東基吉'],a:0,
+ hint:'東京女子高等師範学校附属幼稚園の主事を務め、『幼稚園真諦』を著した人物です。',
+ exp:'倉橋惣三はフレーベルの精神を重視しつつ形式化した恩物中心の保育を批判し、子どもの生活に根差した「誘導保育」を提唱。主著『幼稚園真諦』『育ての心』。',
+ memo:'「くらはし」→「暮らし（生活）」を大事にした人。',
+ point:'城戸幡太郎は「社会中心主義」、保育問題研究会。人物と主張の組み合わせ問題が定番。',
+ freq:3,trend:'日本の保育の歴史で最頻出の人物'},
+{s:'genri',q:'1890年、新潟静修学校に付設した託児施設を開き、日本の保育所の始まりとされる人物はだれか。',
+ c:['赤沢鍾美','石井十次','野口幽香','留岡幸助','松野クララ'],a:0,
+ hint:'学校に通う子どもたちが連れてきた幼い弟妹を預かったのが始まりです。',
+ exp:'赤沢鍾美・仲子夫妻が新潟静修学校に付設した託児施設が、日本初の保育所といわれます（のちの守孤扶独幼稚児保護会）。野口幽香・森島峰は1900年に二葉幼稚園（のち二葉保育園）を開設しました。',
+ memo:'「1890 赤沢、新潟で 赤ちゃん預かる」→ あかざわ＝赤ちゃん。',
+ point:'二葉幼稚園（貧民のための幼稚園）、東京女子師範学校附属幼稚園（1876年・日本初の官立幼稚園）との区別。',
+ freq:2,trend:'保育の歴史の年代並べ替え問題で頻出'},
+{s:'genri',q:'1840年に世界で最初の幼稚園（キンダーガルテン）を創設し、遊具「恩物」を考案した人物は誰か。',
+ c:['フレーベル','ペスタロッチ','オーエン','モンテッソーリ','ルソー'],a:0,
+ hint:'ドイツの人物で、主著は『人間の教育』です。',
+ exp:'フレーベルはドイツのブランケンブルクで「一般ドイツ幼稚園」を創設。神から授かった物という意味の「恩物（Gabe）」を考案しました。',
+ memo:'「フレーベル＝フレンドリーな幼稚園（キンダーガルテン＝子どもの庭）」。',
+ point:'オーエンの「性格形成学院」の幼児学校（1816）は幼稚園より前、という時系列も狙われる。',
+ freq:3,trend:'保育原理・教育原理の両方で頻出'},
+{s:'genri',q:'児童福祉法に規定される「保育士」の業務として正しいものはどれか。',
+ c:['児童の保育及び児童の保護者に対する保育に関する指導','児童の教育及び家庭訪問','児童の医療及び保健指導','児童の保育のみ','保護者の就労支援'],a:0,
+ hint:'子どもだけでなく「保護者」に対する支援も保育士の仕事です。',
+ exp:'児童福祉法第18条の4で、保育士は「専門的知識及び技術をもつて、児童の保育及び児童の保護者に対する保育に関する指導を行うことを業とする者」と定義されています。名称独占資格であり、信用失墜行為の禁止・秘密保持義務（退職後も）があります。',
+ memo:'保育士の仕事は「子ども＋保護者」の2本柱。',
+ point:'名称独占（業務独占ではない）、秘密保持義務は「保育士でなくなった後も」が頻出のひっかけ。',
+ freq:3,trend:'保育原理・子ども家庭福祉で繰り返し出題'},
+
+/* ---------- 教育原理 ---------- */
+{s:'kyoiku',q:'『エミール』を著し、子どもの自然な発達を尊重する「消極教育」を主張した人物は誰か。',
+ c:['ルソー','ロック','コメニウス','ヘルバルト','デューイ'],a:0,
+ hint:'「子どもの発見者」とも呼ばれるフランスの思想家です。',
+ exp:'ルソーは『エミール』（1762年）で、大人が知識を早く教え込むのではなく、自然の発達に従う「消極教育」を主張しました。',
+ memo:'「ルソーはルーズ（消極的）に見守る」。',
+ point:'ロックは「白紙（タブラ・ラサ）」説・『教育に関する考察』。混同注意。',
+ freq:3,trend:'教育原理の西洋教育史で最頻出クラス'},
+{s:'kyoiku',q:'『隠者の夕暮』を著し、「直観教授」を重視して孤児や貧民の子の教育に尽くしたスイスの教育者は誰か。',
+ c:['ペスタロッチ','フレーベル','モンテッソーリ','ケイ','オーエン'],a:0,
+ hint:'ノイホーフやシュタンツで実践を行いました。',
+ exp:'ペスタロッチは「生活が陶冶する」として、家庭的な愛情と直観にもとづく教育を実践。主著『隠者の夕暮』『リーンハルトとゲルトルート』。',
+ memo:'「ペスタロッチ＝ペッタリ寄り添う孤児の父」。',
+ point:'フレーベルはペスタロッチの学園で学んだ。師弟関係もよく問われる。',
+ freq:3,trend:'人物と著作の組み合わせとして頻出'},
+{s:'kyoiku',q:'世界初の絵入り教科書とされる『世界図絵』を著した人物は誰か。',
+ c:['コメニウス','ルソー','ヘルバルト','ロック','ルター'],a:0,
+ hint:'「近代教授学の祖」と呼ばれ、『大教授学』も著しました。',
+ exp:'コメニウスは「あらゆる人に、あらゆる事柄を教える」ことを目指し、『大教授学』で教授法を体系化。『世界図絵』は視覚に訴える絵入り教科書です。',
+ memo:'「こめにうす＝絵をこめた本」。',
+ point:'『大教授学』と『世界図絵』の2冊セットで覚える。',
+ freq:2,trend:'西洋教育史の人物問題で定期的に出題'},
+{s:'kyoiku',q:'シカゴ大学附属実験学校を開設し、『学校と社会』で経験主義・児童中心主義の教育を説いた人物は誰か。',
+ c:['デューイ','キルパトリック','パーカースト','ブルーナー','ソーンダイク'],a:0,
+ hint:'「なすことによって学ぶ（learning by doing）」で知られるアメリカの哲学者です。',
+ exp:'デューイは学校を小さな社会と捉え、子どもの経験・活動を中心に据えた教育を主張。主著『学校と社会』『民主主義と教育』。',
+ memo:'「デューイ＝Do（する）で学ぶ」。',
+ point:'キルパトリック＝プロジェクト・メソッド、パーカースト＝ドルトン・プラン、ブルーナー＝発見学習。',
+ freq:3,trend:'教育方法の人物組み合わせで頻出'},
+{s:'kyoiku',q:'1907年、ローマのスラム街に「子どもの家」を開設し、感覚教具や「敏感期」の考えで知られる人物は誰か。',
+ c:['モンテッソーリ','エレン・ケイ','シュタイナー','フレーベル','ニイル'],a:0,
+ hint:'イタリア初の女性医学博士ともいわれる人物です。',
+ exp:'モンテッソーリは子どもの自発的な活動を重視し、整えられた環境と教具を用いる教育法を確立しました。',
+ memo:'「モンテ（山）のように教具を積む子どもの家」。',
+ point:'エレン・ケイ＝『児童の世紀』（1900）、シュタイナー＝自由ヴァルドルフ学校、ニイル＝サマーヒル学園。',
+ freq:2,trend:'新教育運動の人物として繰り返し出題'},
+{s:'kyoiku',q:'教育基本法第1条に定められた教育の目的として、（　）に入る語句はどれか。「教育は、（　）を目指し、平和で民主的な国家及び社会の形成者として必要な資質を備えた心身ともに健康な国民の育成を期して行われなければならない。」',
+ c:['人格の完成','個性の伸長','学力の向上','生きる力の育成','自立の確立'],a:0,
+ hint:'教育の「目的」は人として完成すること。',
+ exp:'教育基本法（1947年制定、2006年全面改正）第1条は「人格の完成を目指し」と規定しています。',
+ memo:'「教育の第1は人格（じんかく）が第一」。',
+ point:'2006年改正で「生涯学習の理念」「家庭教育」「幼児期の教育」の条文が新設された点も頻出。',
+ freq:3,trend:'教育法規の空欄補充で頻出'},
+{s:'kyoiku',q:'2006年の教育基本法改正で新設された条文に含まれるものはどれか。',
+ c:['幼児期の教育','教育の機会均等','義務教育','教育の目的','政治教育'],a:0,
+ hint:'就学前の子どもに関わる条文です。',
+ exp:'2006年改正で新設されたのは「生涯学習の理念（第3条）」「家庭教育（第10条）」「幼児期の教育（第11条）」など。教育の機会均等・義務教育・教育の目的・政治教育は改正前から存在します。',
+ memo:'新設3点セット「しょう・か・よう」＝生涯学習・家庭教育・幼児期の教育。',
+ point:'第11条「幼児期の教育は、生涯にわたる人格形成の基礎を培う重要なもの」が穴埋めで頻出。',
+ freq:2,trend:'法改正のポイントとして定期的に出題'},
+{s:'kyoiku',q:'ヘルバルトが提唱した教授段階（四段階教授法）として正しい順序はどれか。',
+ c:['明瞭－連合－系統－方法','予備－提示－比較－総括','分析－総合－連合－系統','導入－展開－まとめ－評価','提示－比較－総括－応用'],a:0,
+ hint:'弟子のツィラーは「分析・総合」、ラインは「予備・提示」に改めました。',
+ exp:'ヘルバルトは教育の目的を倫理学に、方法を心理学に求め「明瞭・連合・系統・方法」の4段階を提唱。ツィラーが5段階（分析・総合・連合・系統・方法）、ラインが5段階（予備・提示・比較・総括・応用）に発展させました。',
+ memo:'「明（めい）れん けい ほう」→「メイ、連携法」。',
+ point:'ヘルバルト派の誰が何段階を唱えたかの組み合わせが狙われる。',
+ freq:2,trend:'教授法の歴史で数年おきに出題'},
+
+/* ---------- 社会的養護 ---------- */
+{s:'yogo',q:'里親の種類として児童福祉法等に定められていないものはどれか。',
+ c:['養育里親','専門里親','養子縁組里親','親族里親','短期支援里親'],a:4,
+ hint:'里親は4種類。「短期」は別の事業（短期入所生活援助＝ショートステイ）の言葉です。',
+ exp:'里親は「養育里親」「専門里親」「養子縁組里親」「親族里親」の4種類。専門里親は虐待を受けた児童や障害のある児童などを養育します。',
+ memo:'「よう・せん・よう・しん」→「養育・専門・養子・親族」。',
+ point:'専門里親は委託児童2人まで・委託期間原則2年、などの数値も出題されることがある。',
+ freq:3,trend:'社会的養護で毎回のように出題'},
+{s:'yogo',q:'2017年に「情緒障害児短期治療施設」から名称変更された施設はどれか。',
+ c:['児童心理治療施設','児童自立支援施設','児童養護施設','障害児入所施設','児童発達支援センター'],a:0,
+ hint:'心理的な困難を抱える子どもへの「治療」が目的の施設です。',
+ exp:'2016年の児童福祉法改正により、2017年4月から「児童心理治療施設」に名称変更。家庭環境や交友関係などにより社会生活への適応が困難になった児童に心理治療・生活指導を行います。',
+ memo:'「情短（じょうたん）→ 心理治療」。',
+ point:'児童自立支援施設＝不良行為をした（するおそれのある）児童等が対象、旧「教護院」。',
+ freq:2,trend:'施設の目的・対象の組み合わせ問題で頻出'},
+{s:'yogo',q:'小規模住居型児童養育事業（ファミリーホーム）の定員として正しいものはどれか。',
+ c:['5〜6人','2〜3人','8〜10人','10〜12人','1〜2人'],a:0,
+ hint:'里親（最大4人）より多く、地域小規模児童養護施設（6人）程度。',
+ exp:'ファミリーホームは養育者の住居で、要保護児童5〜6人を養育する家庭養護の形態です（2008年法定化）。',
+ memo:'「ファミリー（家族）は5〜6人」＝大家族のイメージ。',
+ point:'ファミリーホームは「施設養護」ではなく「家庭養護」に分類される点が頻出。',
+ freq:2,trend:'家庭養護の形態として出題'},
+{s:'yogo',q:'2016年の児童福祉法改正で明確化された社会的養護の原則として正しいものはどれか。',
+ c:['家庭養育優先原則','施設養護優先原則','大舎制優先原則','措置の原則廃止','親権停止の原則'],a:0,
+ hint:'家庭での養育が難しい場合も、できる限り「家庭と同様の環境」で。',
+ exp:'2016年改正で、児童が家庭で養育されることが困難な場合は里親やファミリーホームなど「家庭と同様の養育環境」で養育されるよう国・自治体が措置を講じる「家庭養育優先原則」が規定されました。2017年には「新しい社会的養育ビジョン」が示されています。',
+ memo:'「2016（にーまるいちろく）→ 家庭がイチ番」。',
+ point:'新しい社会的養育ビジョンでは就学前の子どもの里親委託率75%以上（概ね7年以内）などの数値目標。',
+ freq:3,trend:'社会的養護・子ども家庭福祉の両方で頻出'},
+{s:'yogo',q:'「この子らを世の光に」という言葉を残し、近江学園を創設した人物は誰か。',
+ c:['糸賀一雄','石井亮一','石井十次','留岡幸助','高木憲次'],a:0,
+ hint:'戦後、知的障害児の福祉に尽くし「社会福祉の父」と呼ばれます。',
+ exp:'糸賀一雄は1946年に近江学園、1963年に重症心身障害児施設びわこ学園を創設。障害のある子ども自身が光り輝く存在であることを「この子らを世の光に」と表現しました。',
+ memo:'「いとが（糸）でつなぐ世の光」。',
+ point:'石井亮一＝滝乃川学園（知的障害）、石井十次＝岡山孤児院、留岡幸助＝家庭学校（感化）、高木憲次＝肢体不自由児の療育（整肢療護園）。',
+ freq:3,trend:'人物と施設の組み合わせとして非常に頻出'},
+{s:'yogo',q:'1887年に岡山孤児院を創設し、「無制限収容」や小舎制（家族舎制）を実践した人物は誰か。',
+ c:['石井十次','石井亮一','留岡幸助','池上雪枝','野口幽香'],a:0,
+ hint:'イギリスのバーナードホームの影響を受けた人物です。',
+ exp:'石井十次は岡山孤児院で、孤児を家庭的な小集団で養育する家族舎制を取り入れ、「岡山孤児院十二則」を定めました。「児童福祉の父」とも呼ばれます。',
+ memo:'「十次（じゅうじ）＝十字架、キリスト教の慈愛で孤児院」。',
+ point:'同じ「石井」の亮一（滝乃川学園）との区別が最大のひっかけ。',
+ freq:2,trend:'社会的養護の歴史で定期的に出題'},
+{s:'yogo',q:'児童養護施設の入所対象として、児童福祉法上正しいものはどれか。',
+ c:['保護者のない児童、虐待されている児童その他環境上養護を要する児童（原則乳児を除く）','不良行為をなし、又はなすおそれのある児童のみ','配偶者のない女子とその監護すべき児童','障害のある児童のみ','乳児のみ'],a:0,
+ hint:'乳児は原則として別の施設（乳児院）が対象です。',
+ exp:'児童養護施設は保護者のない児童（乳児を除く。ただし特に必要のある場合は乳児を含む）、虐待されている児童その他環境上養護を要する児童を入所させて養護し、退所者への相談・援助も行います。',
+ memo:'「乳児院→乳児、養護施設→乳児以外」と年齢で分ける。',
+ point:'母子生活支援施設＝配偶者のない女子とその児童。施設と対象者の対応表を作っておくと強い。',
+ freq:3,trend:'施設種別の目的・対象は毎回のように出題'},
+
+/* ---------- 子ども家庭福祉 ---------- */
+{s:'kodomo',q:'児童福祉法における「児童」の定義として正しいものはどれか。',
+ c:['満18歳に満たない者','満20歳に満たない者','満15歳に満たない者','小学校就学の始期に達するまでの者','満12歳に満たない者'],a:0,
+ hint:'児童の権利に関する条約と同じ年齢です。',
+ exp:'児童福祉法の児童＝満18歳に満たない者。さらに乳児（満1歳に満たない者）、幼児（満1歳から小学校就学の始期に達するまで）、少年（小学校就学の始期から満18歳に達するまで）に分けられます。',
+ memo:'「乳1・幼就学・少18」。',
+ point:'母子保健法の「新生児＝出生後28日を経過しない乳児」も一緒に覚える。',
+ freq:3,trend:'基本中の基本。毎回どこかで問われる'},
+{s:'kodomo',q:'目の前で家族に対する暴力を見せる「面前DV」は、児童虐待防止法上どの虐待に当たるか。',
+ c:['心理的虐待','身体的虐待','ネグレクト','性的虐待','虐待に該当しない'],a:0,
+ hint:'子ども自身は直接たたかれていません。心に傷を負わせる行為です。',
+ exp:'児童虐待は身体的虐待・性的虐待・ネグレクト・心理的虐待の4類型。面前DVは心理的虐待に当たり、近年の児童相談所の虐待相談対応件数では心理的虐待が最も多くなっています。',
+ memo:'「見せるだけでも心を殴る」。',
+ point:'虐待の通告先は市町村・都道府県の設置する福祉事務所・児童相談所。「確証がなくても」「虐待を受けたと思われる」段階で通告義務がある。',
+ freq:3,trend:'虐待の類型・統計は毎回のように出題'},
+{s:'kodomo',q:'児童虐待を受けたと思われる児童を発見した者の通告先として、法律に定められていないものはどれか。',
+ c:['家庭裁判所','市町村','都道府県の設置する福祉事務所','児童相談所','児童委員を介した市町村・児童相談所等'],a:0,
+ hint:'通告先は「福祉」の窓口です。',
+ exp:'児童虐待防止法第6条により、通告先は市町村、都道府県の設置する福祉事務所、児童相談所（児童委員を介することも可）。守秘義務は通告義務の遵守を妨げません。',
+ memo:'通告先は「し・ふく・じそう」（市町村・福祉事務所・児相）。',
+ point:'「虐待を受けた児童」ではなく「受けたと思われる児童」が対象（2004年改正）。',
+ freq:3,trend:'通告義務の対象・通告先の正誤で頻出'},
+{s:'kodomo',q:'児童の権利に関する条約について正しいものはどれか。',
+ c:['1989年に国連で採択され、日本は1994年に批准した','1959年に国連で採択され、日本は1979年に批准した','1951年に日本で制定された','1924年に国際連盟で採択された','日本は現在も批准していない'],a:0,
+ hint:'「平成元年」採択、日本はその5年後に批准です。',
+ exp:'児童の権利に関する条約は1989年国連総会で採択、日本は1994年に批准。子どもを権利の主体とし、「生きる」「育つ」「守られる」「参加する」権利を定めます。1959年は「児童の権利に関する宣言」、1924年は「ジュネーブ宣言」、1951年は日本の「児童憲章」です。',
+ memo:'「いちきゅうはちきゅう（1989）、子どもの権利は 急ぐ（94）批准」。',
+ point:'意見表明権（第12条）、子どもの最善の利益（第3条）が頻出。',
+ freq:3,trend:'権利保障の歴史年表で頻出'},
+{s:'kodomo',q:'1951年5月5日に制定された「児童憲章」の前文に含まれない文言はどれか。',
+ c:['児童は、権利の主体として意見を表明する。','児童は、人として尊ばれる。','児童は、社会の一員として重んぜられる。','児童は、よい環境の中で育てられる。','（※上の4つのうち3つが前文の文言）'],a:0,
+ hint:'前文は「尊ばれる」「重んぜられる」「育てられる」と、すべて受け身の形です。',
+ exp:'児童憲章の前文は「児童は、人として尊ばれる。児童は、社会の一員として重んぜられる。児童は、よい環境の中で育てられる。」の3つ。意見表明権は児童の権利に関する条約の考え方です。',
+ memo:'「とう・おも・そだ」＝尊ばれる・重んぜられる・育てられる（全部受け身）。',
+ point:'児童憲章は法律ではなく、国民の申し合わせ（宣言）である点も出題される。',
+ freq:2,trend:'前文の空欄補充として定期的に出題'},
+{s:'kodomo',q:'2023年4月に施行された、こども施策の基本理念を定めた法律はどれか。',
+ c:['こども基本法','子ども・子育て支援法','次世代育成支援対策推進法','児童福祉法','少子化社会対策基本法'],a:0,
+ hint:'同じ日に「こども家庭庁」も発足しました。',
+ exp:'こども基本法は日本国憲法と児童の権利に関する条約の精神にのっとり、こども施策を総合的に推進するための基本法。2023年4月1日施行、同日こども家庭庁が発足しました。',
+ memo:'「2023.4.1 こども基本法 ＋ こども家庭庁」のセット。',
+ point:'こども基本法の「こども」は年齢で区切らず「心身の発達の過程にある者」と定義される。',
+ freq:2,trend:'近年の新しい制度として出題が増加'},
+{s:'kodomo',q:'児童相談所の設置について、児童福祉法上「設置しなければならない」とされているものはどれか。',
+ c:['都道府県と指定都市','すべての市町村','中核市のみ','都道府県のみ','特別区のみ'],a:0,
+ hint:'中核市・特別区は「設置することができる」です。',
+ exp:'児童相談所は都道府県・指定都市に設置義務があり、中核市や特別区（政令で定める市）は設置することができます。一時保護所を附設することも可能です。',
+ memo:'「県と政令市は義務、中核・特別区は任意」。',
+ point:'市町村は児童家庭相談の第一義的窓口。児相は専門性の高い困難事例を担う、という役割分担も頻出。',
+ freq:2,trend:'相談機関の役割として繰り返し出題'},
+
+/* ---------- 社会福祉 ---------- */
+{s:'fukushi',q:'いわゆる「福祉六法」に含まれないものはどれか。',
+ c:['介護保険法','生活保護法','児童福祉法','老人福祉法','知的障害者福祉法'],a:0,
+ hint:'残りは「身体障害者福祉法」と「母子及び父子並びに寡婦福祉法」です。',
+ exp:'福祉六法は生活保護法・児童福祉法・身体障害者福祉法・知的障害者福祉法・老人福祉法・母子及び父子並びに寡婦福祉法。介護保険法（1997年制定）は社会保険の法律です。',
+ memo:'福祉三法（1940年代：生保・児福・身障）＋ 1960年代の3つ（知的・老人・母子）＝六法。',
+ point:'成立年代の順番（三法→六法）が問われやすい。',
+ freq:3,trend:'社会福祉の法体系で頻出'},
+{s:'fukushi',q:'生活保護法の扶助の種類として含まれないものはどれか。',
+ c:['保育扶助','教育扶助','住宅扶助','生業扶助','葬祭扶助'],a:0,
+ hint:'扶助は8種類。保育は含まれません。',
+ exp:'生活保護の扶助は生活・教育・住宅・医療・介護・出産・生業・葬祭の8種類。医療扶助と介護扶助は原則として現物給付、それ以外は原則金銭給付です。',
+ memo:'「せい・きょう・じゅう・い・かい・しゅっ・なり・そう」→「生協住医、介出生葬」。',
+ point:'4原理（国家責任・無差別平等・最低生活・補足性）と4原則（申請保護・基準及び程度・必要即応・世帯単位）も必須。',
+ freq:3,trend:'生活保護は毎回のように出題'},
+{s:'fukushi',q:'民生委員について正しいものはどれか。',
+ c:['厚生労働大臣が委嘱し、児童委員を兼ねる','市町村長が任命し、任期は5年である','給与が支給される常勤職である','都道府県知事が委嘱し、任期は2年である','社会福祉士の資格が必要である'],a:0,
+ hint:'無給・任期3年のボランティア的な存在です。',
+ exp:'民生委員は都道府県知事の推薦により厚生労働大臣が委嘱し、任期は3年、給与は支給されません。児童福祉法により児童委員を兼ねます。',
+ memo:'「民生委員は大臣から3年、無給で児童委員も」。',
+ point:'主任児童委員は児童委員の中から厚生労働大臣が指名する。',
+ freq:2,trend:'地域福祉の担い手として定期的に出題'},
+{s:'fukushi',q:'1942年のイギリス「ベヴァリッジ報告」が克服すべきとした「5つの巨悪（巨人悪）」に含まれないものはどれか。',
+ c:['差別','窮乏','疾病','無知','怠惰'],a:0,
+ hint:'残りの1つは「不潔」です。',
+ exp:'ベヴァリッジ報告は窮乏・疾病・無知・不潔・怠惰を5つの巨悪とし、社会保険を中心とした「ゆりかごから墓場まで」の社会保障制度を提言しました。',
+ memo:'「きゅう・しっ・む・ふ・たい」→「急失無付帯」。',
+ point:'エリザベス救貧法（1601）、新救貧法（1834・劣等処遇）との年代順も頻出。',
+ freq:2,trend:'社会福祉の歴史で数年おきに出題'},
+{s:'fukushi',q:'福祉サービスに関する苦情を解決するため、都道府県社会福祉協議会に置かれる機関はどれか。',
+ c:['運営適正化委員会','第三者委員','福祉事務所','地域包括支援センター','社会福祉審議会'],a:0,
+ hint:'社会福祉法第83条に規定されている委員会です。',
+ exp:'運営適正化委員会は都道府県社会福祉協議会に置かれ、福祉サービスの苦情解決や日常生活自立支援事業の運営監視を行います。事業者段階では苦情解決責任者・苦情受付担当者・第三者委員を置きます。',
+ memo:'「苦情は県社協の“適正化”へ」。',
+ point:'事業者段階（第三者委員）と都道府県段階（運営適正化委員会）の二段構え。',
+ freq:2,trend:'利用者保護の仕組みとして頻出'},
+{s:'fukushi',q:'地域包括支援センターに配置される3職種の組み合わせとして正しいものはどれか。',
+ c:['保健師・社会福祉士・主任介護支援専門員','医師・看護師・保育士','保健師・精神保健福祉士・介護福祉士','社会福祉士・弁護士・保健師','介護福祉士・理学療法士・栄養士'],a:0,
+ hint:'「保健」「福祉」「ケアマネジメント」の専門職です。',
+ exp:'地域包括支援センターは介護保険法に基づき市町村が設置。保健師・社会福祉士・主任介護支援専門員（主任ケアマネジャー）が連携して高齢者の総合相談や権利擁護などを行います。',
+ memo:'「ほ・しゃ・しゅ」＝保健・社福・主任ケアマネ。',
+ point:'設置主体は市町村（委託可）。',
+ freq:1,trend:'関連分野として時々出題'},
+
+/* ---------- 保育の心理学 ---------- */
+{s:'shinri',q:'ピアジェの認知発達理論で、「自己中心性」や「アニミズム」が見られる時期はどれか。',
+ c:['前操作期','感覚運動期','具体的操作期','形式的操作期','潜伏期'],a:0,
+ hint:'おおむね2歳〜7歳頃、幼児期にあたります。',
+ exp:'ピアジェの発達段階は感覚運動期（0〜2歳）・前操作期（2〜7歳）・具体的操作期（7〜11歳）・形式的操作期（11歳〜）。前操作期は自己中心性、アニミズム、保存概念の未獲得が特徴。保存概念は具体的操作期に獲得されます。',
+ memo:'「かん・ぜん・ぐ・けい」→「感前具形（かんぜんぐけい）」、2・7・11で区切る。',
+ point:'「潜伏期」はフロイトの心理性的発達段階。理論の混同を誘う選択肢に注意。',
+ freq:3,trend:'保育の心理学で最頻出'},
+{s:'shinri',q:'エリクソンの心理社会的発達理論で、乳児期の発達課題（心理社会的危機）はどれか。',
+ c:['基本的信頼 対 不信','自律性 対 恥・疑惑','自発性 対 罪悪感','勤勉性 対 劣等感','同一性 対 同一性拡散'],a:0,
+ hint:'最初に身近な養育者を「信じられるかどうか」です。',
+ exp:'エリクソンの8段階のうち、乳児期は基本的信頼対不信、幼児前期は自律性対恥・疑惑、遊戯期（幼児後期）は自発性（積極性）対罪悪感、学童期は勤勉性対劣等感、青年期は同一性対同一性拡散。',
+ memo:'「しん・じ・じ・きん・どう」→「信じ（る）自（分で）勤（めて）同一」。',
+ point:'青年期の「アイデンティティ」「モラトリアム」も頻出キーワード。',
+ freq:3,trend:'発達段階の組み合わせ問題で頻出'},
+{s:'shinri',q:'エインズワースのストレンジ・シチュエーション法で、養育者との分離時に泣き、再会時には積極的に接触を求めてすぐに落ち着くタイプはどれか。',
+ c:['Bタイプ（安定型）','Aタイプ（回避型）','Cタイプ（アンビバレント型）','Dタイプ（無秩序・無方向型）','Eタイプ（依存型）'],a:0,
+ hint:'最も望ましい愛着の型です。',
+ exp:'Aタイプ（回避型）は分離に泣かず再会時も避ける、Bタイプ（安定型）は分離で泣き再会で喜んで落ち着く、Cタイプ（アンビバレント型）は分離で強く混乱し再会時に接触を求めつつ怒りを示す、Dタイプ（無秩序型）は行動に一貫性がない。',
+ memo:'「A＝Avoid（避ける）、B＝Best（安定）、C＝Contradiction（矛盾＝アンビバレント）、D＝Disorganized」。',
+ point:'愛着理論の提唱者はボウルビィ、測定法を開発したのがエインズワース。',
+ freq:3,trend:'愛着の型として繰り返し出題'},
+{s:'shinri',q:'子どもが一人でできることと、大人や仲間の援助があればできることとの差を「発達の最近接領域」と呼んだ人物は誰か。',
+ c:['ヴィゴツキー','ピアジェ','ブルーナー','ゲゼル','ワトソン'],a:0,
+ hint:'旧ソ連の心理学者で、言語と思考の社会的起源を重視しました。',
+ exp:'ヴィゴツキーは、他者との相互作用を通して発達が進むとし、援助があれば達成できる水準との差を「発達の最近接領域」と呼びました。この考えはブルーナーらの「足場かけ（スキャフォールディング）」につながります。',
+ memo:'「ヴィゴツキー → ビ（Bi＝2つ）の水準の差」。',
+ point:'ゲゼル＝成熟優位説（双生児の階段のぼり実験）、ワトソン＝環境（行動主義）。',
+ freq:3,trend:'発達理論の人物問題で頻出'},
+{s:'shinri',q:'パーテンの遊びの分類で、「同じ場所で同じような遊びをしているが、互いに関わり合わない遊び」はどれか。',
+ c:['平行遊び','ひとり遊び','傍観的行動','連合遊び','協同遊び'],a:0,
+ hint:'線路のように「並んで」いるけれど交わらない遊びです。',
+ exp:'パーテンは遊びを、何もしていない行動・ひとり遊び・傍観的行動・平行遊び・連合遊び・協同遊びに分類。連合遊びは一緒に遊ぶが役割分担はなく、協同遊びは共通の目的と役割分担がある遊びです。',
+ memo:'「平行線は交わらない」。',
+ point:'連合遊びと協同遊びの違い（役割分担・組織化の有無）がひっかけポイント。',
+ freq:2,trend:'遊びの発達として定期的に出題'},
+{s:'shinri',q:'人間の乳児は他の哺乳類に比べ未熟な状態で生まれるとして「生理的早産」を唱えた人物は誰か。',
+ c:['ポルトマン','ハーロウ','ボウルビィ','ローレンツ','スピッツ'],a:0,
+ hint:'スイスの動物学者です。',
+ exp:'ポルトマンは、人間は本来あと約1年胎内にいるべき状態で生まれるとして「生理的早産」と呼びました。ハーロウはアカゲザルの代理母実験、ローレンツは刷り込み（インプリンティング）、スピッツは8か月不安やホスピタリズムの研究で知られます。',
+ memo:'「ポルトマン → ポロッと早く生まれる」。',
+ point:'人物と研究の組み合わせ（ハーロウ＝接触の快、ローレンツ＝刷り込み）を表で整理。',
+ freq:2,trend:'発達の基礎理論として数年おきに出題'},
+{s:'shinri',q:'生後9か月頃に見られる、子どもと大人が同じ対象に注意を向けて共有する「三項関係」の成立を示す行動はどれか。',
+ c:['共同注意','原始反射','生理的微笑','喃語','クーイング'],a:0,
+ hint:'「ほら、見て」と指さしたものを一緒に見る行動です。',
+ exp:'共同注意は「子ども−大人−もの」の三項関係の成立を示し、指さしや社会的参照（大人の表情を見て行動を決める）につながります。この変化は「9か月革命」とも呼ばれます。',
+ memo:'「9か月で “キュー（9）” っと一緒に見る」。',
+ point:'生理的微笑（新生児）→ 社会的微笑（3か月頃）→ 人見知り（8か月頃）の順も頻出。',
+ freq:2,trend:'乳児期の発達として定期的に出題'},
+
+/* ---------- 子どもの保健 ---------- */
+{s:'hoken',q:'乳児の身体発育について、一般的に正しいものはどれか。',
+ c:['体重は生後1年で出生時の約3倍になる','身長は生後1年で出生時の約2倍になる','体重は生後3か月で出生時の約3倍になる','身長は生後1年で約30cm伸びる','体重は生後1年で出生時の約5倍になる'],a:0,
+ hint:'出生時約3kg → 1歳で約9kg。',
+ exp:'体重は生後3〜4か月で約2倍、1年で約3倍。身長は出生時約50cmで、1年で約1.5倍（約75cm）、4〜5歳で約2倍になります。',
+ memo:'「体重 1歳3倍、身長 1歳1.5倍・4歳2倍」→「さん・いちてんご・よん」。',
+ point:'カウプ指数＝体重(g)÷身長(cm)²×10（乳幼児の発育評価）も頻出。',
+ freq:3,trend:'発育の数値として毎回のように出題'},
+{s:'hoken',q:'大泉門が閉鎖する一般的な時期はどれか。',
+ c:['1歳6か月頃','生後1〜2か月頃','生後6か月頃','3歳頃','5歳頃'],a:0,
+ hint:'小泉門は生後1〜2か月頃。大泉門はもっと遅いです。',
+ exp:'大泉門は前頭骨と頭頂骨の間のひし形のすき間で、1歳6か月頃までに閉鎖します。極端な膨隆は髄膜炎など、陥没は脱水のサインになることがあります。',
+ memo:'「大きい門は1歳半（1.5）でしまる」。',
+ point:'早期閉鎖・閉鎖遅延が病気のサインになる点、陥没＝脱水も問われる。',
+ freq:2,trend:'発育の観察ポイントとして定期的に出題'},
+{s:'hoken',q:'「保育所における感染症対策ガイドライン」でのインフルエンザの登園の目安として正しいものはどれか。',
+ c:['発症後5日経過し、かつ解熱後3日経過（乳幼児）','解熱後24時間経過','すべての発しんが痂皮化するまで','発症後3日経過','医師の許可なく翌日から登園可'],a:0,
+ hint:'学校では解熱後2日ですが、乳幼児はそれより1日長くなります。',
+ exp:'インフルエンザは「発症した後5日経過し、かつ解熱した後2日経過（乳幼児は3日経過）」。水痘はすべての発しんが痂皮（かさぶた）化するまで、麻しんは解熱後3日経過まで、流行性耳下腺炎は腫脹発現後5日経過し全身状態が良好になるまで。',
+ memo:'「インフル 5・3（ごさん）」→ 5日と3日。',
+ point:'感染症ごとの登園目安を一覧表で覚えるのが合格の近道。',
+ freq:3,trend:'感染症の登園基準は頻出中の頻出'},
+{s:'hoken',q:'次の予防接種のうち、生ワクチンはどれか。',
+ c:['BCG','B型肝炎ワクチン','Hibワクチン','日本脳炎ワクチン','五種混合ワクチン'],a:0,
+ hint:'結核を予防するワクチンです。',
+ exp:'生ワクチンにはBCG、MR（麻しん風しん）、水痘、おたふくかぜ、ロタウイルスなどがあります。B型肝炎、Hib、小児用肺炎球菌、日本脳炎、五種混合などは不活化ワクチン。',
+ memo:'生ワクチン＝「ビー・エム・すい・おた・ロタ」（BCG・MR・水痘・おたふく・ロタ）。',
+ point:'定期接種か任意接種かも問われる（おたふくかぜは任意接種）。',
+ freq:2,trend:'予防接種の種類として定期的に出題'},
+{s:'hoken',q:'乳幼児突然死症候群（SIDS）の予防として推奨されている内容として正しいものはどれか。',
+ c:['1歳になるまでは寝かせる時にあおむけに寝かせる','うつぶせ寝を習慣づける','柔らかい布団で寝かせる','できるだけ人工乳で育てる','室温を高めに保つ'],a:0,
+ hint:'睡眠中の姿勢がポイントです。',
+ exp:'SIDSの予防として、1歳になるまではあおむけに寝かせる、できるだけ母乳で育てる、たばこをやめる、の3点が推奨されています。保育所では睡眠中の定期的な呼吸・体位の確認も重要です。',
+ memo:'SIDS予防3点セット「あおむけ・母乳・禁煙」。',
+ point:'SIDSは窒息などの事故とは区別される、という点も出題される。',
+ freq:2,trend:'安全管理の分野で定期的に出題'},
+{s:'hoken',q:'乳児の心肺蘇生で行う胸骨圧迫のテンポとして正しいものはどれか。',
+ c:['1分間に100〜120回','1分間に60〜80回','1分間に140〜160回','1分間に30回','1分間に200回'],a:0,
+ hint:'成人と同じテンポです。',
+ exp:'胸骨圧迫は1分間に100〜120回のテンポで、胸の厚さの約1/3が沈むまで強く、絶え間なく行います。乳児は2本指（または両手で胸郭を包む方法）で圧迫します。',
+ memo:'「100〜120＝“もしもしかめよ”くらいの速さで」。',
+ point:'圧迫の深さ＝胸の厚さの約1/3、AEDは未就学児用パッド（なければ成人用）。',
+ freq:2,trend:'事故・救急対応として出題'},
+{s:'hoken',q:'乳歯について正しいものはどれか。',
+ c:['全部で20本で、生後6〜8か月頃から生え始める','全部で28本である','生後1か月頃から生え始める','5歳頃に生えそろう','全部で32本である'],a:0,
+ hint:'永久歯（28〜32本）より少ないです。',
+ exp:'乳歯は生後6〜8か月頃に下の前歯から生え始め、2歳半〜3歳頃に20本生えそろいます。',
+ memo:'「乳歯は20（にじゅう）、2歳半で揃う」。',
+ point:'6歳臼歯（第一大臼歯）は最初に生える永久歯。',
+ freq:1,trend:'歯の発育として時々出題'},
+
+/* ---------- 子どもの食と栄養 ---------- */
+{s:'eiyo',q:'「授乳・離乳の支援ガイド（2019年改定版）」における離乳の開始時期の目安として正しいものはどれか。',
+ c:['生後5〜6か月頃','生後2〜3か月頃','生後9〜11か月頃','生後12〜18か月頃','生後3〜4か月頃'],a:0,
+ hint:'首のすわりがしっかりし、支えると座れる頃です。',
+ exp:'離乳の開始は生後5〜6か月頃、完了は生後12〜18か月頃。開始時はなめらかにすりつぶした状態のものを1日1回1さじずつから始めます。果汁を与える必要はないとされています。',
+ memo:'「離乳スタート ゴー・ロク（5〜6）、ゴール 1歳〜1歳半」。',
+ point:'初期（5〜6か月）・中期（7〜8か月：舌でつぶせる）・後期（9〜11か月：歯ぐきでつぶせる）・完了期（12〜18か月：歯ぐきで噛める）の固さも頻出。',
+ freq:3,trend:'離乳の進め方は毎回のように出題'},
+{s:'eiyo',q:'乳児ボツリヌス症予防のため、1歳未満の乳児に与えてはいけない食品はどれか。',
+ c:['はちみつ','豆腐','白身魚','米がゆ','かぼちゃ'],a:0,
+ hint:'加熱してもボツリヌス菌の芽胞は死滅しにくいです。',
+ exp:'はちみつにはボツリヌス菌の芽胞が含まれることがあり、腸内環境が未熟な1歳未満の乳児が摂取すると乳児ボツリヌス症を起こす恐れがあります。はちみつ入りの飲料・お菓子にも注意。',
+ memo:'「はちみつは1歳の誕生日プレゼント」。',
+ point:'通常の加熱では芽胞は死滅しない、という点もひっかけで出る。',
+ freq:2,trend:'離乳期の注意点として定期的に出題'},
+{s:'eiyo',q:'食品表示法で表示が義務付けられている食物アレルギーの「特定原材料」に含まれないものはどれか。',
+ c:['大豆','卵','乳','小麦','くるみ'],a:0,
+ hint:'義務は8品目。大豆は「推奨表示」です。',
+ exp:'特定原材料（表示義務）はえび・かに・くるみ・小麦・そば・卵・乳・落花生（ピーナッツ）の8品目（くるみは2025年4月から完全義務化）。大豆は表示が推奨される品目です。',
+ memo:'「えび・かに・くるみ・こむぎ・そば・たまご・にゅう・らっかせい」→「エビカニ来るミ、こむそば卵乳落花生」。',
+ point:'表示義務品目は改正で増えるため、試験年度の最新情報を確認。乳幼児の原因食物は鶏卵が最多。',
+ freq:3,trend:'アレルギーは毎回のように出題'},
+{s:'eiyo',q:'次のうち、脂溶性ビタミンの組み合わせとして正しいものはどれか。',
+ c:['ビタミンA・D・E・K','ビタミンB1・B2・C','ビタミンA・C・E','ビタミンB群・D・K','ビタミンC・D・E・K'],a:0,
+ hint:'脂溶性は4つ。水溶性はB群とCです。',
+ exp:'脂溶性ビタミンはA・D・E・K。体内に蓄積しやすく過剰症に注意が必要です。水溶性ビタミンはB群とCで、過剰分は尿中に排出されます。',
+ memo:'「脂溶性は “だけ” （D・A・K・E）」。',
+ point:'欠乏症の組み合わせ（D→くる病、B1→脚気、C→壊血病、A→夜盲症、K→出血傾向）も頻出。',
+ freq:3,trend:'栄養素の基礎として毎回のように出題'},
+{s:'eiyo',q:'1gあたりのエネルギー量が最も大きい栄養素はどれか。',
+ c:['脂質','炭水化物','たんぱく質','ビタミン','ミネラル'],a:0,
+ hint:'他の三大栄養素の2倍以上です。',
+ exp:'1gあたりのエネルギーは、炭水化物約4kcal、たんぱく質約4kcal、脂質約9kcal（アトウォーター係数）。ビタミン・ミネラルはエネルギー源になりません。',
+ memo:'「4・4・9（しし・く）」→ 炭水化物4・たんぱく質4・脂質9。',
+ point:'五大栄養素＝三大栄養素＋ビタミン・ミネラル。',
+ freq:2,trend:'基礎知識として定期的に出題'},
+{s:'eiyo',q:'母乳のうち、分娩後数日間に分泌され、分泌型IgAやラクトフェリンを多く含むものはどれか。',
+ c:['初乳','成乳','移行乳','フォローアップミルク','液体ミルク'],a:0,
+ hint:'黄色みがかって、とろみがあります。',
+ exp:'初乳は分娩後数日間に分泌され、免疫物質（分泌型IgA、ラクトフェリンなど）やたんぱく質が多く含まれます。その後、移行乳を経て成乳になります。',
+ memo:'「初乳は “はつ” の免疫プレゼント」。',
+ point:'母乳育児の利点（感染防御・SIDSリスク低下など）とともに出題される。',
+ freq:2,trend:'授乳の分野で定期的に出題'},
+{s:'eiyo',q:'離乳期に入る生後6か月頃以降、母乳育児の場合に特に不足しやすいとされる栄養素はどれか。',
+ c:['鉄','炭水化物','脂質','ナトリウム','ビタミンK（腸内細菌で十分作られる）'],a:0,
+ hint:'不足すると貧血の原因になります。',
+ exp:'授乳・離乳の支援ガイドでは、母乳育児の場合、生後6か月の時点でヘモグロビン濃度が低く鉄欠乏を生じやすいこと、またビタミンD欠乏の指摘もあることから、適切な時期に離乳を開始し、鉄やビタミンDの供給源となる食品を積極的に摂取するよう示しています。',
+ memo:'「6か月で “鉄（テツ）” 切れ」。',
+ point:'鉄の吸収はビタミンCと一緒にとると高まる。',
+ freq:2,trend:'離乳期の栄養として定期的に出題'},
+
+/* ---------- 保育実習理論 ---------- */
+{s:'jisshu',q:'ハ長調の主要三和音のうち、属和音（Ⅴ）の構成音として正しいものはどれか。',
+ c:['ソ・シ・レ','ド・ミ・ソ','ファ・ラ・ド','レ・ファ・ラ','ミ・ソ・シ'],a:0,
+ hint:'ハ長調の5番目の音「ソ」から3度ずつ重ねます。',
+ exp:'ハ長調の主要三和音は、主和音Ⅰ＝ド・ミ・ソ（C）、下属和音Ⅳ＝ファ・ラ・ド（F）、属和音Ⅴ＝ソ・シ・レ（G）。伴奏付けやコードネームの問題で必須です。',
+ memo:'「1・4・5番目の音から “1つ飛ばし” で3つ」。',
+ point:'Ⅴ7（属七の和音）＝ソ・シ・レ・ファ（G7）も頻出。移調問題とセットで出る。',
+ freq:3,trend:'音楽分野で毎回出題'},
+{s:'jisshu',q:'調号にシャープ（♯）が1つ付く長調はどれか。',
+ c:['ト長調','ヘ長調','ニ長調','変ロ長調','イ長調'],a:0,
+ hint:'♯は「ファ」に付きます。ファ♯は導音、その半音上が主音です。',
+ exp:'♯1つ＝ト長調（G）、♯2つ＝ニ長調（D）、♯3つ＝イ長調（A）。♭1つ＝ヘ長調（F）、♭2つ＝変ロ長調（B♭）。',
+ memo:'♯は「ト・ニ・イ」、♭は「ヘ・変ロ」→「♯トニイ、♭ヘロ」。',
+ point:'平行調（ト長調⇔ホ短調）、移調（長2度上げるなど）の問題が頻出。',
+ freq:3,trend:'音楽理論として毎回のように出題'},
+{s:'jisshu',q:'音楽用語「リタルダンド（rit.）」の意味として正しいものはどれか。',
+ c:['だんだん遅く','だんだん速く','だんだん強く','歩くような速さで','元の速さで'],a:0,
+ hint:'曲の終わりによく出てくる指示です。',
+ exp:'リタルダンド＝だんだん遅く、アッチェレランド＝だんだん速く、クレッシェンド＝だんだん強く、アンダンテ＝歩くような速さで、ア・テンポ＝元の速さで。',
+ memo:'「リタル（retire＝引退）でだんだん遅く」。',
+ point:'速度記号・強弱記号・発想記号の意味は頻出の得点源。',
+ freq:2,trend:'音楽記号として定期的に出題'},
+{s:'jisshu',q:'紙に絵の具を置いて二つ折りにし、開いて左右対称の模様をつくる造形技法はどれか。',
+ c:['デカルコマニー','フロッタージュ','マーブリング','スパッタリング','バチック'],a:0,
+ hint:'「合わせ絵」とも呼ばれます。',
+ exp:'デカルコマニー＝合わせ絵、フロッタージュ＝こすり出し、マーブリング＝墨流し、スパッタリング＝網とブラシで絵の具を飛ばす、バチック＝はじき絵（クレヨン＋水彩）、ドリッピング＝吹き流し。',
+ memo:'「デカル（転写）＝写して左右対称」「フロッタージュ＝フロッ（こすって）」。',
+ point:'技法名と説明・用具の組み合わせが定番。',
+ freq:3,trend:'造形分野で毎回のように出題'},
+{s:'jisshu',q:'色相環で向かい合う位置にあり、混ぜると無彩色に近くなる2色の関係を何というか。',
+ c:['補色','類似色','同系色','寒色','中間色'],a:0,
+ hint:'並べるとお互いを最も目立たせる関係です。',
+ exp:'色相環で正反対にある色同士を補色（反対色）といいます（例：赤と青緑、黄と青紫）。色料の三原色はシアン・マゼンタ・イエロー、色光の三原色は赤・緑・青です。',
+ memo:'「補色は “補い合って” 灰色に」。',
+ point:'色の三属性＝色相・明度・彩度。',
+ freq:2,trend:'色彩の基礎として定期的に出題'},
+{s:'jisshu',q:'童謡「ぞうさん」の作詞者と作曲者の組み合わせとして正しいものはどれか。',
+ c:['まど・みちお／團伊玖磨','北原白秋／山田耕筰','野口雨情／本居長世','サトウハチロー／中田喜直','中川李枝子／團伊玖磨'],a:0,
+ hint:'作曲者は「おつかいありさん」ではなく、オペラ「夕鶴」で知られる人物です。',
+ exp:'「ぞうさん」はまど・みちお作詞、團伊玖磨作曲。北原白秋・山田耕筰は「待ちぼうけ」「この道」、野口雨情・本居長世は「七つの子」「赤い靴」「青い眼の人形」、サトウハチロー・中田喜直は「ちいさい秋みつけた」。',
+ memo:'「ぞうさん、まどから だん だん 見える」→ まど・みちお、團伊玖磨。',
+ point:'童謡・絵本の作者は暗記問題として得点源。',
+ freq:2,trend:'児童文化の分野で出題'},
+{s:'jisshu',q:'絵本『ぐりとぐら』の作者（文）は誰か。',
+ c:['中川李枝子','松谷みよ子','林明子','せなけいこ','かこさとし'],a:0,
+ hint:'絵は妹の大村（山脇）百合子が担当しました。',
+ exp:'『ぐりとぐら』は中川李枝子 作、大村百合子（山脇百合子）絵。松谷みよ子＝『いないいないばあ』、林明子＝『はじめてのおつかい』、せなけいこ＝『ねないこだれだ』、かこさとし＝『からすのパンやさん』。',
+ memo:'「ぐりとぐらは中（なか）よし」→ 中川。',
+ point:'絵本の作者と作品の組み合わせは繰り返し問われる。',
+ freq:2,trend:'児童文化の分野で出題'},
+];
+
+/* ===================================================================
+   状態・保存
+   =================================================================== */
+QUESTIONS.forEach((q,i)=>{ q.id = q.s+'-'+i; });
+const STORE_KEY='hoikushi-quiz-v1';
+const NUM = ['①','②','③','④','⑤'];
+let store = loadStore();
+function loadStore(){
+  try{ const v = JSON.parse(localStorage.getItem(STORE_KEY)); if(v && v.q) return v; }catch(e){}
+  return {q:{}, sessions:[], prefs:{}};
+}
+function saveStore(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }catch(e){} }
+
+const prefs = Object.assign({subjects:SUBJECTS.map(s=>s.id), mode:'sheet', count:10, time:60, scope:'all', tts:false, voice:false}, store.prefs||{});
+function savePrefs(){ store.prefs = prefs; saveStore(); }
+
+const $ = id => document.getElementById(id);
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),1800); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function subjName(id){ return (SUBJECTS.find(s=>s.id===id)||{}).name||id; }
+function pct(c,t){ return t? Math.round(c/t*100) : null; }
+function subjStats(id){
+  let c=0,t=0; QUESTIONS.filter(q=>q.s===id).forEach(q=>{const r=store.q[q.id]; if(r){c+=r.c;t+=r.c+r.w;}}); return {c,t};
+}
+
+/* ===================================================================
+   画面切替
+   =================================================================== */
+function show(view){
+  ['viewSetup','viewQuiz','viewResult','viewStats'].forEach(v=>$(v).classList.toggle('hidden', v!==view));
+  $('navHome').classList.toggle('on', view!=='viewStats');
+  $('navStats').classList.toggle('on', view==='viewStats');
+  window.scrollTo(0,0);
+}
+$('navHome').onclick=()=>{ if(session && !session.done && !confirm('出題を中断しますか？')) return; endQuizCleanup(); renderSetup(); show('viewSetup'); };
+$('navStats').onclick=()=>{ if(session && !session.done && !confirm('出題を中断して成績を見ますか？')) return; endQuizCleanup(); renderStats(); show('viewStats'); };
+
+/* ===================================================================
+   設定画面
+   =================================================================== */
+function renderSetup(){
+  const box=$('subjList'); box.innerHTML='';
+  SUBJECTS.forEach(s=>{
+    const n = QUESTIONS.filter(q=>q.s===s.id).length;
+    const st = subjStats(s.id); const p = pct(st.c,st.t);
+    const b=document.createElement('button');
+    b.className='subj'+(prefs.subjects.includes(s.id)?' on':'');
+    b.innerHTML=`<b>${s.name}</b><span>${s.desc}・${n}問</span><span class="acc">${p===null?'未学習':'正答率 '+p+'%'}</span>`;
+    b.onclick=()=>{ const i=prefs.subjects.indexOf(s.id); if(i>=0) prefs.subjects.splice(i,1); else prefs.subjects.push(s.id); savePrefs(); renderSetup(); };
+    box.appendChild(b);
+  });
+  $('selCount').textContent = `${prefs.subjects.length}教科・${pool().length}問が対象`;
+  $('selAll').textContent = prefs.subjects.length===SUBJECTS.length ? 'すべて解除' : 'すべて選択';
+  setSeg('segMode',prefs.mode); setSeg('segCount',prefs.count); setSeg('segTime',prefs.time); setSeg('segScope',prefs.scope);
+  $('swTts').classList.toggle('on',prefs.tts); $('swVoice').classList.toggle('on',prefs.voice);
+  $('voiceNote').textContent = SR ? '' : '※ このブラウザは音声認識に対応していません（Chrome / Safari 推奨。https で開く必要があります）。';
+  $('startBtn').disabled = pool().length===0;
+}
+function setSeg(id,v){ document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on', b.dataset.v===String(v))); }
+function bindSeg(id,key,num){
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{ prefs[key]= num?Number(b.dataset.v):b.dataset.v; savePrefs(); renderSetup(); });
+}
+bindSeg('segMode','mode'); bindSeg('segCount','count',true); bindSeg('segTime','time',true); bindSeg('segScope','scope');
+$('selAll').onclick=()=>{ prefs.subjects = prefs.subjects.length===SUBJECTS.length ? [] : SUBJECTS.map(s=>s.id); savePrefs(); renderSetup(); };
+$('swTts').onclick=()=>{ prefs.tts=!prefs.tts; savePrefs(); renderSetup(); };
+$('swVoice').onclick=()=>{ if(!SR){ toast('このブラウザは音声認識に未対応です'); return; } prefs.voice=!prefs.voice; savePrefs(); renderSetup(); };
+
+function pool(){
+  let list = QUESTIONS.filter(q=>prefs.subjects.includes(q.s));
+  if(prefs.scope==='weak') list = list.filter(q=>store.q[q.id] && store.q[q.id].w>0 && !store.q[q.id].lastOk);
+  if(prefs.scope==='new') list = list.filter(q=>!store.q[q.id]);
+  return list;
+}
+
+/* ===================================================================
+   出題
+   =================================================================== */
+let session=null, cur=null, timerId=null;
+$('startBtn').onclick=()=>startSession(pool());
+
+function startSession(list){
+  if(!list.length){ toast('対象の問題がありません'); return; }
+  list = shuffle(list);
+  if(prefs.count>0) list = list.slice(0,prefs.count);
+  session = {items:list.map(q=>({q, order:shuffle([0,1,2,3,4]), pick:null, ok:null, hintUsed:0, sec:0})), i:0, start:Date.now(), done:false};
+  show('viewQuiz'); renderQuestion();
+}
+
+function renderQuestion(){
+  const it = session.items[session.i], q = it.q;
+  cur = {it, sel:null, answered:false, elapsed:0, hintLevel:0, revealed: prefs.mode!=='flash'};
+  $('qSubj').textContent = subjName(q.s);
+  $('qPos').textContent = `${session.i+1} / ${session.items.length}`;
+  $('qProg').style.width = (session.i/session.items.length*100)+'%';
+  $('qText').innerHTML = `<span class="qno">問${session.i+1}</span>${esc(q.q)}`;
+  $('sheetNo').textContent = '問 '+(session.i+1);
+  $('hints').innerHTML=''; $('feedback').classList.add('hidden');
+  $('answerBtn').disabled=true; $('answerBtn').classList.remove('hidden'); $('hintBtn').classList.remove('hidden');
+  $('micRow').classList.toggle('hidden', !prefs.voice);
+  $('micStatus').textContent = 'マイクを押して話してください（例：「3番」）';
+  renderChoices();
+  // 一問一答モード：選択肢を隠す
+  $('flashCover').classList.toggle('hidden', cur.revealed);
+  $('choices').classList.toggle('hidden', !cur.revealed);
+  $('sheet').classList.toggle('hidden', !cur.revealed);
+  startTimer();
+  if(prefs.tts) speakQuestion(()=>{ if(prefs.voice) startListen(); });
+  else if(prefs.voice) startListen();
+}
+
+function renderChoices(){
+  const it=cur.it, q=it.q, ul=$('choices'), bb=$('bubbles');
+  ul.innerHTML=''; bb.innerHTML='';
+  it.order.forEach((ci,pos)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<span class="n">${NUM[pos]}</span><span>${esc(q.c[ci])}</span>`;
+    li.onclick=()=>select(pos);
+    ul.appendChild(li);
+    const b=document.createElement('button');
+    b.className='bubble'; b.textContent=pos+1; b.setAttribute('aria-label','選択肢'+(pos+1));
+    b.onclick=()=>select(pos);
+    bb.appendChild(b);
+  });
+}
+$('showChoices').onclick=revealChoices;
+function revealChoices(){
+  cur.revealed=true;
+  $('flashCover').classList.add('hidden'); $('choices').classList.remove('hidden'); $('sheet').classList.remove('hidden');
+}
+
+function select(pos){
+  if(cur.answered) return;
+  if(cur.removed && cur.removed.includes(pos)) return;
+  cur.sel=pos;
+  [...$('choices').children].forEach((li,i)=>li.classList.toggle('sel',i===pos));
+  [...$('bubbles').children].forEach((b,i)=>b.classList.toggle('fill',i===pos));
+  $('answerBtn').disabled=false;
+}
+$('answerBtn').onclick=()=>{ if(cur && cur.sel!==null) submit(cur.sel); };
+$('hintBtn').onclick=()=>giveHint(true);
+
+/* ---------- タイマー＆段階ヒント ---------- */
+function startTimer(){
+  clearInterval(timerId);
+  const limit = prefs.time;
+  $('timer').classList.toggle('hidden', !limit);
+  $('timer').classList.remove('warn','danger');
+  if(!limit){ timerId=setInterval(()=>{cur.elapsed++;},1000); return; }
+  updateTimer();
+  timerId=setInterval(()=>{
+    if(!cur || cur.answered) return;
+    cur.elapsed++;
+    updateTimer();
+    const left = limit-cur.elapsed;
+    if(cur.elapsed >= Math.ceil(limit*0.5) && cur.hintLevel<1) giveHint(false);
+    if(left <= Math.floor(limit*0.2) && cur.hintLevel<2) giveHint(false);
+    if(left<=0) timeUp();
+  },1000);
+}
+function updateTimer(){
+  const limit=prefs.time, left=Math.max(0,limit-cur.elapsed);
+  $('timerT').textContent = left+'s';
+  $('timerBar').style.width = (left/limit*100)+'%';
+  $('timer').classList.toggle('warn', left<=limit*0.5 && left>limit*0.2);
+  $('timer').classList.toggle('danger', left<=limit*0.2);
+}
+function giveHint(manual){
+  if(cur.answered) return;
+  const it=cur.it, q=it.q;
+  if(cur.hintLevel===0){
+    cur.hintLevel=1;
+    $('hints').insertAdjacentHTML('beforeend',`<div class="hintbox"><b>ヒント1</b>　${esc(q.hint)}</div>`);
+    if(!manual) toast('時間が半分経過 — ヒントを表示しました');
+    if(prefs.tts) speak('ヒント。'+q.hint);
+  }else if(cur.hintLevel===1){
+    cur.hintLevel=2;
+    if(!cur.revealed) revealChoices();
+    // 不正解の選択肢を2つ消す
+    const wrongPos = it.order.map((ci,pos)=>ci!==q.a?pos:null).filter(p=>p!==null);
+    cur.removed = shuffle(wrongPos).slice(0,2);
+    cur.removed.forEach(p=>{ $('choices').children[p].classList.add('out'); $('bubbles').children[p].classList.add('out'); });
+    if(cur.removed.includes(cur.sel)){ cur.sel=null; $('answerBtn').disabled=true; [...$('bubbles').children].forEach(b=>b.classList.remove('fill')); [...$('choices').children].forEach(li=>li.classList.remove('sel')); }
+    $('hints').insertAdjacentHTML('beforeend',`<div class="hintbox"><b>ヒント2</b>　まちがいの選択肢を2つ消しました（${cur.removed.map(p=>NUM[p]).sort().join('・')}）</div>`);
+    if(!manual) toast('残りわずか — 選択肢を2つ消しました');
+  }else{
+    toast('ヒントはこれ以上ありません'); return;
+  }
+  it.hintUsed = cur.hintLevel;
+}
+function timeUp(){ toast('時間切れ'); submit(null); }
+
+/* ---------- 解答処理 ---------- */
+function submit(pos){
+  if(cur.answered) return;
+  cur.answered=true; clearInterval(timerId); stopListen(); stopSpeak();
+  const it=cur.it, q=it.q;
+  if(!cur.revealed) revealChoices();
+  const correctPos = it.order.indexOf(q.a);
+  const ok = pos===correctPos;
+  it.pick=pos; it.ok=ok; it.sec=cur.elapsed;
+  // 記録
+  const r = store.q[q.id] || {c:0,w:0};
+  ok? r.c++ : r.w++; r.lastOk=ok; r.at=Date.now();
+  store.q[q.id]=r; saveStore();
+  // 表示
+  [...$('choices').children].forEach((li,i)=>{ li.classList.remove('sel'); if(i===correctPos) li.classList.add('correct'); else if(i===pos) li.classList.add('wrong'); });
+  [...$('bubbles').children].forEach((b,i)=>{ if(i===correctPos) b.classList.add('correct'); });
+  $('answerBtn').classList.add('hidden'); $('hintBtn').classList.add('hidden'); $('micRow').classList.add('hidden');
+  const v=$('verdict');
+  v.className='verdict '+(ok?'ok':'ng');
+  v.innerHTML = ok ? '◯ 正解！' : (pos===null ? '× 時間切れ／未解答' : '× 不正解');
+  v.insertAdjacentHTML('beforeend',`<span class="small muted" style="font-weight:500">正解は ${NUM[correctPos]} ${esc(q.c[q.a])}</span>`);
+  $('expBox').innerHTML = expHTML(q);
+  $('feedback').classList.remove('hidden');
+  $('nextBtn').textContent = session.i+1<session.items.length ? '次の問題へ' : '結果を見る';
+  $('feedback').scrollIntoView({behavior:'smooth',block:'start'});
+  if(prefs.tts) speak((ok?'正解。':'不正解。正解は'+(correctPos+1)+'番、'+q.c[q.a]+'。')+'覚え方。'+q.memo);
+}
+function expHTML(q){
+  return `
+    <section><h3>📖 解説</h3><p>${esc(q.exp)}</p></section>
+    <section><h3>💡 覚え方</h3><p class="memo">${esc(q.memo)}</p></section>
+    <section><h3>⭐ 重要ポイント</h3><p class="point">${esc(q.point)}</p></section>
+    <section><h3>📅 出題傾向</h3><p class="trend"><span class="stars">${'★'.repeat(q.freq)}${'☆'.repeat(3-q.freq)}</span>　${esc(q.trend)}</p></section>`;
+}
+$('nextBtn').onclick=()=>{ stopSpeak(); session.i++; if(session.i<session.items.length) renderQuestion(); else finish(); };
+$('quitBtn').onclick=()=>{ if(!confirm('ここまでの結果を表示しますか？')) return; finish(); };
+
+function endQuizCleanup(){ clearInterval(timerId); stopListen(); stopSpeak(); if(session) session.done=true; }
+
+/* ===================================================================
+   結果
+   =================================================================== */
+function finish(){
+  endQuizCleanup();
+  const done = session.items.filter(it=>it.ok!==null);
+  const c = done.filter(it=>it.ok).length;
+  const p = pct(c,done.length);
+  if(done.length){
+    store.sessions.unshift({at:Date.now(), n:done.length, c, subj:[...new Set(done.map(it=>it.q.s))]});
+    store.sessions = store.sessions.slice(0,30); saveStore();
+  }
+  $('rAcc').textContent = p===null?'-':p+'%';
+  const sec = Math.round((Date.now()-session.start)/1000);
+  $('rSub').textContent = `${done.length}問中 ${c}問正解 ・ ${Math.floor(sec/60)}分${sec%60}秒` + (p!==null ? (p>=60?' ・ 合格ライン(60%)クリア！':' ・ 合格ラインまであと少し') : '');
+  // 教科別
+  const by={}; done.forEach(it=>{ (by[it.q.s] ||= {c:0,t:0}); by[it.q.s].t++; if(it.ok) by[it.q.s].c++; });
+  $('rSubj').innerHTML = Object.keys(by).map(s=>barRow(subjName(s),by[s].c,by[s].t)).join('') || '<p class="muted small">解答なし</p>';
+  // 振り返り
+  $('rList').innerHTML = done.map((it,i)=>`
+    <li><details><summary><span class="mk ${it.ok?'ok':'ng'}">${it.ok?'◯':'×'}</span>${esc(it.q.q.slice(0,46))}${it.q.q.length>46?'…':''}
+      <span class="small muted">（${it.sec}秒${it.hintUsed?'・ヒント'+it.hintUsed:''}）</span></summary>
+      <div class="exp"><p class="small" style="margin-bottom:8px">正解：<b>${esc(it.q.c[it.q.a])}</b>${!it.ok && it.pick!==null ? '　あなたの解答：'+esc(it.q.c[it.order[it.pick]]) : ''}</p>${expHTML(it.q)}</div></details></li>`).join('');
+  $('retryWrong').disabled = !done.some(it=>!it.ok);
+  show('viewResult');
+}
+$('retryWrong').onclick=()=>{ const wrong=session.items.filter(it=>it.ok===false).map(it=>it.q); const keep=prefs.count; prefs.count=0; startSession(wrong); prefs.count=keep; };
+$('backHome').onclick=()=>{ renderSetup(); show('viewSetup'); };
+
+function barRow(label,c,t){
+  const p=pct(c,t);
+  const col = p===null?'var(--line)': p>=80?'var(--ok)': p>=60?'var(--hint)':'var(--ng)';
+  return `<div class="srow"><span>${esc(label)}</span><span class="b"><i style="width:${p||0}%;background:${col}"></i></span><span class="v">${p===null?'—':p+'%'} <span class="small muted">${c}/${t}</span></span></div>`;
+}
+
+/* ===================================================================
+   成績画面
+   =================================================================== */
+function renderStats(){
+  let c=0,t=0,seen=0;
+  QUESTIONS.forEach(q=>{const r=store.q[q.id]; if(r){c+=r.c;t+=r.c+r.w;seen++;}});
+  $('sAcc').textContent = t? pct(c,t)+'%' : '-';
+  $('sAns').textContent = t;
+  $('sCover').textContent = Math.round(seen/QUESTIONS.length*100)+'%';
+  $('sSubj').innerHTML = SUBJECTS.map(s=>{const st=subjStats(s.id); return barRow(s.name,st.c,st.t);}).join('');
+  const weak = QUESTIONS.map(q=>({q,r:store.q[q.id]})).filter(x=>x.r && x.r.w>0)
+    .sort((a,b)=>(b.r.w-b.r.c)-(a.r.w-a.r.c) || b.r.w-a.r.w).slice(0,10);
+  $('sWeak').innerHTML = weak.length ? weak.map(x=>`<li><details><summary><span class="tag">${subjName(x.q.s)}</span> ${esc(x.q.q.slice(0,40))}… <span class="small muted">（×${x.r.w} ◯${x.r.c}）</span></summary>
+      <div class="exp"><p class="small" style="margin-bottom:8px">正解：<b>${esc(x.q.c[x.q.a])}</b></p>${expHTML(x.q)}</div></details></li>`).join('')
+    : '<li class="muted small">まだ間違えた問題はありません</li>';
+  $('sHist').innerHTML = store.sessions.length ? store.sessions.slice(0,10).map(s=>{
+      const d=new Date(s.at);
+      return `<li><span style="font-family:var(--num)">${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span>　${s.c}/${s.n}問 <b>${pct(s.c,s.n)}%</b> <span class="small muted">${s.subj.map(subjName).join('・')}</span></li>`;
+    }).join('') : '<li class="muted small">履歴はまだありません</li>';
+}
+$('resetBtn').onclick=()=>{ if(!confirm('成績データをすべて削除します。よろしいですか？')) return; store.q={}; store.sessions=[]; saveStore(); renderStats(); toast('リセットしました'); };
+
+/* ===================================================================
+   音声：読み上げ (SpeechSynthesis)
+   =================================================================== */
+function speak(text,onend){
+  if(!('speechSynthesis' in window)){ onend&&onend(); return; }
+  const u=new SpeechSynthesisUtterance(text); u.lang='ja-JP'; u.rate=1.05;
+  const v=speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith('ja')); if(v) u.voice=v;
+  if(onend){ u.onend=onend; u.onerror=onend; }
+  speechSynthesis.speak(u);
+}
+function stopSpeak(){ if('speechSynthesis' in window) speechSynthesis.cancel(); }
+function speakQuestion(onend){
+  stopSpeak();
+  const it=cur.it, q=it.q;
+  let text = '問題。'+q.q;
+  if(cur.revealed) text += '。' + it.order.map((ci,pos)=>(pos+1)+'番、'+q.c[ci]).join('。');
+  speak(text,onend);
+}
+$('ttsBtn').onclick=()=>speakQuestion();
+
+/* ===================================================================
+   音声：解答 (SpeechRecognition)
+   =================================================================== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec=null, listening=false;
+function startListen(){
+  if(!SR || !prefs.voice || !cur || cur.answered) return;
+  stopListen();
+  rec = new SR(); rec.lang='ja-JP'; rec.interimResults=true; rec.maxAlternatives=3; rec.continuous=false;
+  rec.onstart=()=>{ listening=true; $('micBtn').classList.add('live'); $('micStatus').textContent='聞き取り中…「3番」「ヒント」など'; };
+  rec.onresult=e=>{
+    const res=e.results[e.results.length-1];
+    const texts=[...res].map(a=>a.transcript);
+    $('micStatus').textContent='「'+texts[0]+'」';
+    if(res.isFinal) handleVoice(texts);
+  };
+  rec.onerror=e=>{ $('micStatus').textContent = e.error==='not-allowed' ? 'マイクの使用が許可されていません' : e.error==='no-speech' ? '聞き取れませんでした。もう一度マイクを押してください' : '音声認識エラー：'+e.error; };
+  rec.onend=()=>{ listening=false; $('micBtn').classList.remove('live'); };
+  try{ rec.start(); }catch(e){}
+}
+function stopListen(){ if(rec){ try{ rec.abort(); }catch(e){} rec=null; } listening=false; $('micBtn').classList.remove('live'); }
+$('micBtn').onclick=()=>{ if(listening) stopListen(); else { stopSpeak(); startListen(); } };
+
+function norm(s){
+  return s.replace(/[\s　、。・,.！!？?「」『』（）()]/g,'')
+          .replace(/[０-９]/g,d=>String.fromCharCode(d.charCodeAt(0)-0xFEE0))
+          .replace(/[ァ-ン]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)).toLowerCase();
+}
+function parseNumber(t){
+  const s=norm(t);
+  const m = s.match(/^(?:答えは|こたえは)?([1-5①-⑤一二三四五])(?:番|ばん|です|$)/) || s.match(/([1-5①-⑤])番/) || s.match(/([一二三四五])番/);
+  if(m){ const ch=m[1]; const map={'①':1,'②':2,'③':3,'④':4,'⑤':5,'一':1,'二':2,'三':3,'四':4,'五':5}; return (map[ch]||Number(ch))-1; }
+  const words=[['いち','いちばん'],['に','にばん'],['さん','さんばん'],['よん','よんばん','し','しばん'],['ご','ごばん']];
+  for(let i=0;i<words.length;i++){ if(words[i].includes(s) || words[i].some(w=>s===w+'です')) return i; }
+  return null;
+}
+function lcs(a,b){ // 最長共通部分文字列の長さ
+  let best=0; const dp=new Array(b.length+1).fill(0);
+  for(let i=1;i<=a.length;i++){ let prev=0; for(let j=1;j<=b.length;j++){ const tmp=dp[j]; dp[j]= a[i-1]===b[j-1] ? prev+1 : 0; if(dp[j]>best) best=dp[j]; prev=tmp; } }
+  return best;
+}
+function handleVoice(texts){
+  if(!cur || cur.answered) return;
+  const t0 = norm(texts[0]);
+  if(/ヒント|ひんと/.test(texts[0]) || t0.includes('ひんと')){ giveHint(true); setTimeout(startListen,400); return; }
+  if(/スキップ|わからない|分からない|パス/.test(texts[0]) || /すきっぷ|わからない|ぱす/.test(t0)){ submit(null); return; }
+  if(/選択肢|せんたくし/.test(texts[0]) && !cur.revealed){ revealChoices(); if(prefs.tts) speakQuestion(startListen); else setTimeout(startListen,400); return; }
+  if(/もう一度|もういちど|読んで/.test(texts[0])){ speakQuestion(startListen); return; }
+  // 番号で解答
+  for(const t of texts){
+    const n=parseNumber(t);
+    if(n!==null && n<5){ if(cur.removed && cur.removed.includes(n)){ toast('その選択肢は消去済みです'); setTimeout(startListen,400); return; } if(!cur.revealed) revealChoices(); select(n); setTimeout(()=>submit(n),500); return; }
+  }
+  // 内容で解答（選択肢の言葉と照合）
+  const it=cur.it, q=it.q;
+  let best=-1, bestScore=0;
+  for(const t of texts){
+    const nt=norm(t);
+    it.order.forEach((ci,pos)=>{
+      if(cur.removed && cur.removed.includes(pos)) return;
+      const nc=norm(q.c[ci]);
+      const l=lcs(nt,nc);
+      const score = l / Math.max(2, Math.min(nc.length, 12));
+      if(l>=2 && score>bestScore){ bestScore=score; best=pos; }
+    });
+  }
+  if(best>=0 && bestScore>=0.5){ if(!cur.revealed) revealChoices(); select(best); toast(NUM[best]+' と判定しました'); setTimeout(()=>submit(best),700); return; }
+  $('micStatus').textContent='「'+texts[0]+'」→ 判定できませんでした。番号でどうぞ（例：「2番」）';
+  setTimeout(startListen,600);
+}
+
+/* ===================================================================
+   起動
+   =================================================================== */
+if('speechSynthesis' in window) speechSynthesis.getVoices();
+renderSetup();
+</script>
+</body>
+</html>
